@@ -50,14 +50,19 @@ export function FocusMode({ task, onComplete, onClose, onSteps, onToggleStep }: 
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-paper px-6 text-center animate-rise">
+    // Contenidor amb scroll: amb molts passos el contingut pot superar l'alçada de
+    // la pantalla; min-h-full + justify-center centra quan hi cap i deixa fer scroll
+    // (fins al botó "Fet") quan no hi cap.
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-paper">
       <button
         onClick={onClose}
-        className="absolute top-5 right-5 text-sm text-muted hover:text-ink transition-colors"
+        className="fixed top-5 right-5 z-10 text-sm text-muted hover:text-ink transition-colors"
         aria-label="Tancar el mode focus"
       >
         Tanca ✕
       </button>
+
+      <div className="flex min-h-full flex-col items-center justify-center px-6 py-16 text-center animate-rise">
 
       {/* Cercle que respira: ancora visual de calma */}
       <div className="mb-8 flex h-28 w-28 items-center justify-center rounded-full bg-sage-soft animate-breathe">
@@ -130,6 +135,7 @@ export function FocusMode({ task, onComplete, onClose, onSteps, onToggleStep }: 
       >
         Fet ✓
       </button>
+      </div>
     </div>
   )
 }
