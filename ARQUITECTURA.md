@@ -52,6 +52,8 @@ src/
   ai.ts                 # client de la feature d'IA: fetch a /api/breakdown + fallback
   App.tsx               # pantalla principal: capçalera, brain dump, calaixos, recompensa
   components/
+    Gate.tsx            # portada privada amb contrasenya (VITE_GATE_CODE)
+    Mark.tsx            # la icona del cercle que respira (reutilitzable)
     FocusMode.tsx       # mode focus a pantalla completa: una tasca, passos, "Fet"
 ```
 
@@ -222,6 +224,13 @@ l'usaven.
 
 **Tocar la recompensa** → `src/App.tsx`, estat `celebrate` + el bloc de baix de tot del
 render (el `🌿` i el text).
+
+**Canviar/treure la contrasenya de la portada** → la lògica és a `src/components/Gate.tsx`,
+però la contrasenya **no és al codi**: és la variable `VITE_GATE_CODE`. Per canviar-la en
+local, edita `.env.local`; a producció, Vercel → Settings → Environment Variables →
+`VITE_GATE_CODE` (entorn Production) + redeploy. Per **desactivar la porta** (fer-ho públic),
+deixa la variable buida o esborra-la i redeploya. Nota: el valor s'insereix al bundle en
+temps de build → és una tanca per a curiosos, no una barrera robusta.
 
 **Ajustar animacions** → `src/index.css` (`@keyframes` + classes `.animate-*`).
 
