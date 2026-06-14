@@ -7,6 +7,7 @@ import {
   completeTask,
   deleteTask,
   setSteps,
+  toggleStep,
   isToday,
   exportTasks,
   importTasks,
@@ -44,6 +45,8 @@ export default function App() {
   }, [tasks])
 
   const focusTask = (tasks ?? []).find((t) => t.id === focusId) ?? null
+  const loaded = tasks !== undefined
+  const isEmpty = loaded && (tasks?.length ?? 0) === 0
 
   function handleAdd(e: React.FormEvent) {
     e.preventDefault()
@@ -95,13 +98,27 @@ export default function App() {
   return (
     <div className="mx-auto flex min-h-full max-w-xl flex-col px-5 pb-24">
       {/* Capçalera */}
-      <header className="flex items-baseline justify-between pt-10 pb-6">
-        <h1 className="text-2xl font-medium tracking-tight text-ink">onething</h1>
-        <span className="text-sm text-muted">
-          {completedToday
-            ? `${completedToday} fet${completedToday === 1 ? '' : 'es'} avui`
-            : 'comencem'}
-        </span>
+      <header className="flex items-center justify-between pt-10 pb-6">
+        <div className="flex items-center gap-2.5">
+          <Mark className="h-7 w-7" breathe />
+          <h1 className="text-2xl font-medium tracking-tight text-ink">onething</h1>
+        </div>
+        {completedToday ? (
+          <span
+            className="flex items-center gap-1"
+            title={`${completedToday} ${completedToday === 1 ? 'feta' : 'fetes'} avui`}
+            aria-label={`${completedToday} ${completedToday === 1 ? 'feta' : 'fetes'} avui`}
+          >
+            {Array.from({ length: Math.min(completedToday, 7) }).map((_, i) => (
+              <span key={i} className="h-1.5 w-1.5 rounded-full bg-sage animate-rise" />
+            ))}
+            {completedToday > 7 && (
+              <span className="ml-0.5 text-xs text-muted">+{completedToday - 7}</span>
+            )}
+          </span>
+        ) : (
+          <span className="text-sm text-muted">comencem</span>
+        )}
       </header>
 
       {/* Brain dump: sense fricció, un sol camp */}
@@ -115,11 +132,22 @@ export default function App() {
         />
       </form>
 
-      {/* Els tres calaixos */}
-      <div className="space-y-8">
+      {/* Estat buit: benvinguda calmada en lloc de tres calaixos buits */}
+      {!loaded ? null : isEmpty ? (
+        <div className="flex flex-col items-center gap-6 py-16 text-center animate-rise">
+          <Mark className="h-20 w-20" breathe />
+          <div className="space-y-1.5">
+            <p className="text-lg text-ink">Una cosa a la vegada.</p>
+            <p className="mx-auto max-w-xs text-sm leading-relaxed text-muted">
+              Escriu què tens al cap aquí dalt i prem Enter. La resta pot esperar.
+            </p>
+          </div>
+        </div>
+      ) : (
+      <div className="space-y-10">
         {BUCKETS.map(({ key, label }) => (
           <section key={key}>
-            <h2 className="mb-3 text-xs font-medium uppercase tracking-widest text-muted">
+            <h2 className="mb-4 text-xs font-medium uppercase tracking-[0.18em] text-muted">
               {label}
             </h2>
             {byBucket[key].length === 0 ? (
@@ -157,7 +185,8 @@ export default function App() {
             )}
           </section>
         ))}
-      </div>
+        </div>
+      )}
 
       {/* Portabilitat discreta: emporta't les teves dades */}
       <footer className="mt-12 flex flex-col items-center gap-2">
@@ -190,6 +219,7 @@ export default function App() {
           onClose={() => setFocusId(null)}
           onComplete={() => handleComplete(focusTask.id)}
           onSteps={(steps) => setSteps(focusTask.id, steps)}
+          onToggleStep={(index) => toggleStep(focusTask.id, index)}
         />
       )}
 
@@ -203,6 +233,33 @@ export default function App() {
         </div>
       )}
     </div>
+  )
+}
+
+/** Marca d'onething: el cercle que respira (anella + punt sàlvia). */
+function Mark({
+  className = '',
+  breathe = false,
+}: {
+  className?: string
+  breathe?: boolean
+}) {
+  return (
+    <svg
+      viewBox="0 0 512 512"
+      className={`${className}${breathe ? ' animate-breathe' : ''}`}
+      aria-hidden="true"
+    >
+      <circle
+        cx="256"
+        cy="256"
+        r="150"
+        fill="none"
+        stroke="var(--color-sage)"
+        strokeWidth="26"
+      />
+      <circle cx="256" cy="256" r="46" fill="var(--color-sage-deep)" />
+    </svg>
   )
 }
 

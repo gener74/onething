@@ -7,6 +7,7 @@ interface Props {
   onComplete: () => void
   onClose: () => void
   onSteps: (steps: string[]) => void
+  onToggleStep: (index: number) => void
 }
 
 /** Format mm:ss */
@@ -16,7 +17,10 @@ function fmt(s: number) {
   return `${m}:${r.toString().padStart(2, '0')}`
 }
 
-export function FocusMode({ task, onComplete, onClose, onSteps }: Props) {
+export function FocusMode({ task, onComplete, onClose, onSteps, onToggleStep }: Props) {
+  const doneSteps = new Set(task.doneSteps ?? [])
+  const hasSteps = !!task.steps && task.steps.length > 0
+  const allDone = hasSteps && doneSteps.size === task.steps!.length
   const [elapsed, setElapsed] = useState(0)
   const [loading, setLoading] = useState(false)
 
@@ -65,18 +69,44 @@ export function FocusMode({ task, onComplete, onClose, onSteps }: Props) {
         {task.title}
       </h1>
 
-      {/* Micro-passos (si la IA ja els ha generat) */}
-      {task.steps && task.steps.length > 0 ? (
-        <ol className="mb-10 max-w-md space-y-3 text-left">
-          {task.steps.map((step, i) => (
-            <li key={i} className="flex gap-3 text-ink">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sage-soft text-xs text-sage-deep">
-                {i + 1}
-              </span>
-              <span className="leading-snug">{step}</span>
-            </li>
-          ))}
+      {/* Micro-passos (si la IA ja els ha generat): clicables per marcar-los fets */}
+      {hasSteps ? (
+        <>
+        <p className="mb-2 text-xs text-muted">Toca cada pas quan el completis</p>
+        <ol className="mb-10 w-full max-w-md space-y-1 text-left">
+          {task.steps!.map((step, i) => {
+            const done = doneSteps.has(i)
+            return (
+              <li key={i}>
+                <button
+                  onClick={() => onToggleStep(i)}
+                  aria-pressed={done}
+                  className={`flex w-full items-center gap-3 rounded-[var(--radius-soft)] px-3 py-2 text-left transition hover:bg-sage-soft/60 ${
+                    done ? 'opacity-60' : ''
+                  }`}
+                >
+                  <span
+                    className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs transition ${
+                      done
+                        ? 'bg-sage text-white'
+                        : 'border-2 border-sage/45 bg-transparent text-sage-deep'
+                    }`}
+                  >
+                    {done ? '✓' : i + 1}
+                  </span>
+                  <span
+                    className={`leading-snug transition ${
+                      done ? 'text-muted line-through' : 'text-ink'
+                    }`}
+                  >
+                    {step}
+                  </span>
+                </button>
+              </li>
+            )
+          })}
         </ol>
+        </>
       ) : (
         <button
           onClick={handleBreakdown}
@@ -87,9 +117,16 @@ export function FocusMode({ task, onComplete, onClose, onSteps }: Props) {
         </button>
       )}
 
+      {allDone && (
+        <p className="mb-4 text-sm text-sage-deep">
+          Tots els passos fets. Quan vulguis, tanca-ho.
+        </p>
+      )}
       <button
         onClick={onComplete}
-        className="rounded-full bg-sage px-10 py-4 text-lg font-medium text-white shadow-md transition hover:bg-sage-deep active:scale-95"
+        className={`rounded-full bg-sage px-10 py-4 text-lg font-medium text-white shadow-md transition hover:bg-sage-deep active:scale-95 ${
+          allDone ? 'ring-4 ring-sage-soft' : ''
+        }`}
       >
         Fet ✓
       </button>

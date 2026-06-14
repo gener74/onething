@@ -13,6 +13,8 @@ export interface Task {
   bucket: Bucket
   /** Micro-passos generats per la IA ("no sé per on començar"). */
   steps?: string[]
+  /** Índexs dels micro-passos ja marcats com a fets (recompensa pas a pas). */
+  doneSteps?: number[]
   /** 0 = pendent, 1 = feta. (IndexedDB no pot indexar booleans.) */
   done: 0 | 1
   createdAt: number
@@ -63,7 +65,20 @@ export function moveTask(id: number, bucket: Bucket) {
 }
 
 export function setSteps(id: number, steps: string[]) {
-  return db.tasks.update(id, { steps })
+  // Passos nous → reinicia els marcats (els índexs antics ja no hi corresponen).
+  return db.tasks.update(id, { steps, doneSteps: [] })
+}
+
+/** Marca/desmarca un micro-pas pel seu índex. */
+export function toggleStep(id: number, index: number) {
+  return db.transaction('rw', db.tasks, async () => {
+    const t = await db.tasks.get(id)
+    if (!t) return
+    const set = new Set(t.doneSteps ?? [])
+    if (set.has(index)) set.delete(index)
+    else set.add(index)
+    await db.tasks.update(id, { doneSteps: [...set].sort((a, b) => a - b) })
+  })
 }
 
 export function completeTask(id: number) {
@@ -120,6 +135,11 @@ function sanitizeTask(raw: unknown): Omit<Task, 'id'> | null {
     createdAt: typeof t.createdAt === 'number' ? t.createdAt : Date.now(),
   }
   if (Array.isArray(t.steps)) clean.steps = t.steps.map(String)
+  if (Array.isArray(t.doneSteps)) {
+    clean.doneSteps = t.doneSteps.filter(
+      (n): n is number => Number.isInteger(n) && (n as number) >= 0,
+    )
+  }
   if (clean.done === 1 && typeof t.completedAt === 'number') {
     clean.completedAt = t.completedAt
   }

@@ -28,8 +28,15 @@ body,
 
 body {
   margin: 0;
-  background: var(--color-paper);
+  /* Caliu de "spa digital": un bany sàlvia suau que baixa des de dalt i un toc
+     més tènue des de baix per donar profunditat. fixed perquè no es mogui amb l'scroll. */
+  background:
+    radial-gradient(140% 100% at 50% -25%, rgba(107, 143, 113, 0.13), transparent 60%),
+    radial-gradient(110% 70% at 50% 125%, rgba(107, 143, 113, 0.06), transparent 60%),
+    var(--color-paper);
+  background-attachment: fixed;
   color: var(--color-ink);
+  line-height: 1.55; /* ritme de lectura calmat */
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
