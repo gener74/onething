@@ -25,3 +25,5 @@ dist-ssr
 
 # Configuració local de Claude Code (personal, no compartida)
 .claude/settings.local.json
+
+.vercel
