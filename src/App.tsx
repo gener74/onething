@@ -176,7 +176,7 @@ export default function App() {
                     <button
                       onClick={() => deleteTask(t.id)}
                       aria-label="Esborrar"
-                      className="text-muted/40 opacity-0 transition hover:text-ink group-hover:opacity-100"
+                      className="text-muted/40 transition hover:text-ink [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
                     >
                       ✕
                     </button>
@@ -252,7 +252,7 @@ export default function App() {
 function BucketMenu({ task }: { task: Task }) {
   const targets = BUCKETS.filter((b) => b.key !== task.bucket)
   return (
-    <div className="flex gap-1 opacity-0 transition group-hover:opacity-100">
+    <div className="flex gap-1 transition [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100">
       {targets.map((b) => (
         <button
           key={b.key}
