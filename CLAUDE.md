@@ -40,6 +40,9 @@ src/
 vite.config.ts       # plugins: react, tailwind, PWA
 ```
 
+📖 Documentació tècnica detallada (model de dades, IA, PWA, guia de "vull fer X"):
+`ARQUITECTURA.md`.
+
 ## Convencions importants
 
 - **`Task.done` es guarda com a `0 | 1`, NO booleà** — IndexedDB no pot indexar booleans. Les consultes fan servir `.where('done').equals(0|1)`.
