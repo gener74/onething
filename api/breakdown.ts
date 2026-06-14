@@ -43,10 +43,59 @@ const SCHEMA = {
   additionalProperties: false,
 } as const
 
+// --- Protecció bàsica de l'endpoint ---
+
+/**
+ * Mateix origen: només acceptem peticions del domini que serveix l'app (mateix
+ * host). Atura altres webs i `curl` sense capçalera. NOTA: la capçalera `Origin`
+ * es pot falsejar des d'un client no-navegador → és un dissuasiu, no una barrera.
+ */
+function sameOrigin(req: VercelRequest): boolean {
+  const origin = req.headers.origin
+  if (!origin) return false
+  try {
+    return new URL(origin).host === req.headers.host
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Rate limit per IP en memòria: best-effort. En serverless cada instància té la
+ * seva pròpia memòria i es reinicia en arrencades fredes, així que atura ràfegues
+ * contra una mateixa instància, NO un atac distribuït. Per a protecció robusta
+ * caldria un magatzem compartit (Vercel KV / Upstash Redis).
+ */
+const WINDOW_MS = 60_000
+const MAX_PER_WINDOW = 20
+const hits = new Map<string, number[]>()
+
+function clientIp(req: VercelRequest): string {
+  const xff = req.headers['x-forwarded-for']
+  const raw = Array.isArray(xff) ? xff[0] : xff
+  return raw?.split(',')[0].trim() || req.socket?.remoteAddress || 'unknown'
+}
+
+function rateLimited(ip: string): boolean {
+  const now = Date.now()
+  const recent = (hits.get(ip) ?? []).filter((t) => now - t < WINDOW_MS)
+  recent.push(now)
+  hits.set(ip, recent)
+  return recent.length > MAX_PER_WINDOW
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST')
     return res.status(405).json({ error: 'method_not_allowed' })
+  }
+
+  if (!sameOrigin(req)) {
+    return res.status(403).json({ error: 'forbidden_origin' })
+  }
+
+  if (rateLimited(clientIp(req))) {
+    return res.status(429).json({ error: 'rate_limited' })
   }
 
   const title = typeof req.body?.title === 'string' ? req.body.title.trim() : ''
