@@ -35,13 +35,17 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Respecta qui prefereix menys moviment (important per a calma i accessibilitat) */
+/* Respecta qui prefereix menys moviment (important per a calma i accessibilitat).
+   iteration-count: 1 atura net les animacions infinites (p. ex. el cercle que respira),
+   que si no seguirien iterant a velocitat altíssima en comptes de quedar quietes. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
