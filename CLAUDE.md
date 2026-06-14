@@ -65,8 +65,11 @@ Repo: https://github.com/gener74/onething, connectat a Vercel → `push` a `main
 desplega sol a producció.
 
 ➡️ **Següent pas: polir cap a una v1 presentable.**
-- Comprovar que es respecta `prefers-reduced-motion` (filosofia: calma).
-- Icones/PWA i metadades d'instal·lació.
+- Icones PWA de marca + manifest: **FET** (icona "cercle que respira",
+  generades amb `@vite-pwa/assets-generator` des de `public/logo.svg`;
+  `npm run generate-pwa-assets` per regenerar).
+- `prefers-reduced-motion`: FET.
+- Click-through final de l'app live al navegador.
 - (Opcional) si el cost importa, baixar de `claude-sonnet-4-6` a `claude-haiku-4-5`
   canviant només el `model` a `api/breakdown.ts`.
 
