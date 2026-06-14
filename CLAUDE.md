@@ -53,16 +53,21 @@ vite.config.ts       # plugins: react, tailwind, PWA
 
 ## Estat actual i SEGÜENT PAS
 
-La killer feature ("No sé per on començar") ja crida **Claude de debò** via la funció
-serverless `api/breakdown.ts` (model `claude-opus-4-8`, structured outputs → `{ steps }`).
-La clau viu a `ANTHROPIC_API_KEY` al servidor; `src/ai.ts` manté el fallback heurístic
-si l'endpoint no respon. Amb `npm run dev` (Vite sol) no hi ha endpoint → fallback;
-cal `vercel dev` o un desplegament per provar la IA real.
+La killer feature ("No sé per on començar") crida **Claude de debò** via la funció
+serverless `api/breakdown.ts` (model `claude-opus-4-8`, structured outputs → `{ steps }`)
+i ja està **desplegada en producció**: https://una-steel.vercel.app. La clau viu a
+`ANTHROPIC_API_KEY` (variables de Vercel); `src/ai.ts` manté el fallback heurístic si
+l'endpoint no respon. En local, `npm run dev` (Vite sol) no té endpoint → fallback; cal
+`vercel dev` per provar la IA real.
 
-➡️ **Següent pas: desplegar i provar de punta a punta.**
-- Posar `ANTHROPIC_API_KEY` a `.env.local` (vegeu `.env.example`) i provar amb `vercel dev`.
-- Configurar la mateixa variable al projecte de Vercel i desplegar.
-- (Opcional) si el cost importa, es pot baixar a `claude-haiku-4-5` o `claude-sonnet-4-6`
+Repo: https://github.com/gener74/onething, connectat a Vercel → `push` a `main`
+desplega sol a producció.
+
+➡️ **Següent pas: polir cap a una v1 presentable.**
+- Comprovar que es respecta `prefers-reduced-motion` (filosofia: calma).
+- Icones/PWA i metadades d'instal·lació.
+- (Cosmètic) reanomenar la carpeta local `una` → `onething` i el projecte de Vercel.
+- (Opcional) si el cost importa, baixar a `claude-haiku-4-5` o `claude-sonnet-4-6`
   canviant només el `model` a `api/breakdown.ts`.
 
 ## Idea aparcada (per a després d'`onething`)
