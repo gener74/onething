@@ -10,7 +10,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg'],
+      pwaAssets: { config: true },
       manifest: {
         name: 'onething — una cosa a la vegada',
         short_name: 'onething',
@@ -19,18 +19,7 @@ export default defineConfig({
         background_color: '#fbfaf7',
         display: 'standalone',
         orientation: 'portrait',
-        icons: [
-          {
-            src: 'pwa-192.png',
-            sizes: '192x192',
-            type: 'image/png',
-          },
-          {
-            src: 'pwa-512.png',
-            sizes: '512x512',
-            type: 'image/png',
-          },
-        ],
+        // Les icones les injecta @vite-pwa/assets-generator (pwa-assets.config.ts)
       },
     }),
   ],
