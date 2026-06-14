@@ -1,0 +1,97 @@
+/**
+ * Funció serverless: /api/breakdown
+ *
+ * Aquí és on vive la killer feature de debò ("No sé per on començar").
+ * El client (src/ai.ts) crida aquest endpoint amb { title }; nosaltres demanem
+ * a Claude que parteixi la tasca en micro-passos i tornem { steps: string[] }.
+ *
+ * La clau d'API NO surt mai d'aquí: viu a la variable d'entorn ANTHROPIC_API_KEY
+ * del servidor (Vercel), no al bundle del navegador. Això manté la promesa
+ * local-first: cap dada de l'usuari es desa enlloc; només passa per Claude i torna.
+ *
+ * Si aquesta funció falla o no està desplegada, src/ai.ts cau al fallback
+ * heurístic local, així que la UX no es trenca mai.
+ */
+import Anthropic from '@anthropic-ai/sdk'
+import type { VercelRequest, VercelResponse } from '@vercel/node'
+
+const client = new Anthropic() // llegeix ANTHROPIC_API_KEY de l'entorn
+
+const SYSTEM = `Ets un ajudant per a cervells amb TDAH dins d'una eina de focus calmada.
+L'usuari et dóna una tasca que el paralitza. La teva feina és partir-la en una llista
+curta de passos petits i concrets que treguin la paràlisi.
+
+Regles:
+- Entre 3 i 5 passos.
+- El PRIMER pas ha de ser ridículament petit: una sola acció de ~2 minuts que es pugui
+  fer ara mateix sense pensar (obrir, treure, escriure una línia...).
+- Cada pas és UNA sola acció observable, en imperatiu, breu.
+- To calmat i amable, mai imperatiu dur ni motivacional cridaner.
+- Sempre en català.
+- No afegeixis introduccions, números ni explicacions: només els passos.`
+
+/** Esquema d'eixida: forcem exactament { steps: string[] } amb structured outputs. */
+const SCHEMA = {
+  type: 'object',
+  properties: {
+    steps: {
+      type: 'array',
+      items: { type: 'string' },
+    },
+  },
+  required: ['steps'],
+  additionalProperties: false,
+} as const
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', 'POST')
+    return res.status(405).json({ error: 'method_not_allowed' })
+  }
+
+  const title = typeof req.body?.title === 'string' ? req.body.title.trim() : ''
+  if (!title) {
+    return res.status(400).json({ error: 'title_required' })
+  }
+  // Tallem entrades absurdament llargues: és un títol de tasca, no un assaig.
+  const safeTitle = title.slice(0, 500)
+
+  try {
+    const message = await client.messages.create({
+      model: 'claude-opus-4-8',
+      max_tokens: 1024,
+      system: SYSTEM,
+      // effort baix: la tasca és senzilla i volem una resposta àgil i econòmica.
+      output_config: {
+        effort: 'low',
+        format: { type: 'json_schema', schema: SCHEMA },
+      },
+      messages: [
+        {
+          role: 'user',
+          content: `Parteix aquesta tasca en micro-passos: "${safeTitle}"`,
+        },
+      ],
+    })
+
+    if (message.stop_reason === 'refusal') {
+      // Cas rar: classificadors de seguretat. Deixem que el client caigui al fallback.
+      return res.status(502).json({ error: 'refused' })
+    }
+
+    const text = message.content.find((b) => b.type === 'text')?.text ?? ''
+    const parsed = JSON.parse(text) as { steps?: unknown }
+    const steps = Array.isArray(parsed.steps)
+      ? parsed.steps.map(String).filter((s) => s.trim().length > 0)
+      : []
+
+    if (steps.length === 0) {
+      return res.status(502).json({ error: 'empty' })
+    }
+
+    return res.status(200).json({ steps })
+  } catch (err) {
+    console.error('breakdown error', err)
+    return res.status(500).json({ error: 'internal' })
+  }
+}
