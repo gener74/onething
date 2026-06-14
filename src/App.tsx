@@ -220,7 +220,18 @@ export default function App() {
           onClose={() => setFocusId(null)}
           onComplete={() => handleComplete(focusTask.id)}
           onSteps={(steps) => setSteps(focusTask.id, steps)}
-          onToggleStep={(index) => toggleStep(focusTask.id, index)}
+          onToggleStep={async (index) => {
+            const t = focusTask
+            const total = t.steps?.length ?? 0
+            const current = new Set(t.doneSteps ?? [])
+            const willBeDone = !current.has(index)
+            const newCount = willBeDone ? current.size + 1 : current.size - 1
+            await toggleStep(t.id, index)
+            // En marcar l'últim pas pendent, completem la tasca automàticament.
+            if (willBeDone && total > 0 && newCount === total) {
+              handleComplete(t.id)
+            }
+          }}
         />
       )}
 

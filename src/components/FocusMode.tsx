@@ -20,7 +20,6 @@ function fmt(s: number) {
 export function FocusMode({ task, onComplete, onClose, onSteps, onToggleStep }: Props) {
   const doneSteps = new Set(task.doneSteps ?? [])
   const hasSteps = !!task.steps && task.steps.length > 0
-  const allDone = hasSteps && doneSteps.size === task.steps!.length
   const [elapsed, setElapsed] = useState(0)
   const [loading, setLoading] = useState(false)
 
@@ -122,16 +121,9 @@ export function FocusMode({ task, onComplete, onClose, onSteps, onToggleStep }: 
         </button>
       )}
 
-      {allDone && (
-        <p className="mb-4 text-sm text-sage-deep">
-          Tots els passos fets. Quan vulguis, tanca-ho.
-        </p>
-      )}
       <button
         onClick={onComplete}
-        className={`rounded-full bg-sage px-10 py-4 text-lg font-medium text-white shadow-md transition hover:bg-sage-deep active:scale-95 ${
-          allDone ? 'ring-4 ring-sage-soft' : ''
-        }`}
+        className="rounded-full bg-sage px-10 py-4 text-lg font-medium text-white shadow-md transition hover:bg-sage-deep active:scale-95"
       >
         Fet ✓
       </button>
