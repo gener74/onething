@@ -18,17 +18,31 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 const client = new Anthropic() // llegeix ANTHROPIC_API_KEY de l'entorn
 
 const SYSTEM = `Ets un ajudant per a cervells amb TDAH dins d'una eina de focus calmada.
-L'usuari et dóna una tasca que el paralitza. La teva feina és partir-la en una llista
-curta de passos petits i concrets que treguin la paràlisi.
+L'usuari et dóna una tasca que el paralitza. Parteix-la en passos petits i CONCRETS
+que treguin la paràlisi i que de debò facin avançar AQUESTA tasca en particular.
 
 Regles:
 - Entre 3 i 5 passos.
 - El PRIMER pas ha de ser ridículament petit: una sola acció de ~2 minuts que es pugui
   fer ara mateix sense pensar (obrir, treure, escriure una línia...).
-- Cada pas és UNA sola acció observable, en imperatiu, breu.
+- La RESTA de passos han de ser ESPECÍFICS d'aquesta tasca, no plantilles genèriques.
+  PROHIBIT el farciment buit tipus "prepara el que necessites", "fes-ne una part" o
+  "decideix si continues": digues SEMPRE què exactament (quin document, quina web, a qui
+  escriure, quina secció...).
+- Cada pas és UNA sola acció observable, en imperatiu, breu i clara.
+- Si la tasca és ambigua, fes una suposició raonable i sigues concret igualment.
 - To calmat i amable, mai imperatiu dur ni motivacional cridaner.
 - Sempre en català.
-- No afegeixis introduccions, números ni explicacions: només els passos.`
+- No afegeixis introduccions, números ni explicacions: només els passos.
+
+Exemple del nivell de concreció esperat —
+Tasca: "fer la declaració de la renda"
+Passos:
+- Obre el calaix o la carpeta on guardes els papers d'Hisenda (només obrir-lo).
+- Aplega tres documents: el certificat de retencions de la feina, els rebuts deduïbles i el DNI.
+- Entra a la seu de l'Agència Tributària i identifica't amb Cl@ve o certificat.
+- Obre l'esborrany i comprova que les dades personals i els ingressos quadren.
+- Confirma l'esborrany si tot encaixa, o demana cita prèvia si hi ha res estrany.`
 
 /** Esquema d'eixida: forcem exactament { steps: string[] } amb structured outputs. */
 const SCHEMA = {
@@ -110,9 +124,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       model: 'claude-sonnet-4-6',
       max_tokens: 1024,
       system: SYSTEM,
-      // effort baix: la tasca és senzilla i volem una resposta àgil i econòmica.
+      // effort mitjà: partir bé una tasca real demana pensar una mica; 'low' donava
+      // passos massa plans. Sonnet a 'medium' segueix sent ràpid i econòmic.
       output_config: {
-        effort: 'low',
+        effort: 'medium',
         format: { type: 'json_schema', schema: SCHEMA },
       },
       messages: [
