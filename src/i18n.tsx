@@ -110,6 +110,9 @@ const DICT: Record<Lang, Dict> = {
     steps_done_q: 'You’ve done all the steps. How did it go?',
     finished: 'It’s done ✓',
     keep_going: 'One more step',
+    ai_limit_reached: 'You’ve used today’s AI help. Here’s a basic first step — it’s back tomorrow.',
+    ai_remaining_one: '{n} AI breakdown left today',
+    ai_remaining_other: '{n} AI breakdowns left today',
   },
   ca: {
     bucket_now: 'Ara',
@@ -192,6 +195,9 @@ const DICT: Record<Lang, Dict> = {
     steps_done_q: 'Has fet tots els passos. Com ha anat?',
     finished: 'Ja està fet ✓',
     keep_going: 'Un pas més',
+    ai_limit_reached: 'Avui ja has fet servir l’ajuda de la IA. Aquí tens un primer pas bàsic; demà torna.',
+    ai_remaining_one: 'Et queda {n} desglossament d’IA avui',
+    ai_remaining_other: 'Et queden {n} desglossaments d’IA avui',
   },
   es: {
     bucket_now: 'Ahora',
@@ -274,6 +280,9 @@ const DICT: Record<Lang, Dict> = {
     steps_done_q: 'Has hecho todos los pasos. ¿Cómo ha ido?',
     finished: 'Ya está hecho ✓',
     keep_going: 'Un paso más',
+    ai_limit_reached: 'Hoy ya has usado la ayuda de la IA. Aquí tienes un primer paso básico; mañana vuelve.',
+    ai_remaining_one: 'Te queda {n} desglose de IA hoy',
+    ai_remaining_other: 'Te quedan {n} desgloses de IA hoy',
   },
 }
 

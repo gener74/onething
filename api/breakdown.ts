@@ -96,15 +96,15 @@ if (redisUrl && redisToken) {
   }
 }
 
-/** Incrementa un comptador amb caducitat i diu si s'ha superat el límit. */
-async function overLimit(key: string, limit: number, ttlSeconds: number): Promise<boolean> {
-  if (!redis) return false // sense magatzem → no limitem
+/** Incrementa un comptador amb caducitat i torna el recompte (o null si no hi ha magatzem). */
+async function bump(key: string, ttlSeconds: number): Promise<number | null> {
+  if (!redis) return null // sense magatzem → no limitem (fail-open)
   try {
     const n = await redis.incr(key)
     if (n === 1) await redis.expire(key, ttlSeconds)
-    return n > limit
+    return n
   } catch {
-    return false // si Redis falla, no bloquegem (el spend cap protegeix el cost)
+    return null // si Redis falla, no bloquegem (el spend cap protegeix el cost)
   }
 }
 
@@ -150,14 +150,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const device = typeof req.body?.device === 'string' ? req.body.device.slice(0, 64) : ''
   const today = new Date().toISOString().slice(0, 10)
 
-  if (await overLimit(`rl:burst:${ip}`, BURST_PER_IP, 60)) {
+  const burst = await bump(`rl:burst:${ip}`, 60)
+  if (burst !== null && burst > BURST_PER_IP) {
     return res.status(429).json({ error: 'rate_limited' })
   }
-  if (await overLimit(`rl:ip:${ip}:${today}`, DAILY_PER_IP, DAY_TTL)) {
+  const ipDay = await bump(`rl:ip:${ip}:${today}`, DAY_TTL)
+  if (ipDay !== null && ipDay > DAILY_PER_IP) {
     return res.status(429).json({ error: 'rate_limited' })
   }
-  if (device && (await overLimit(`q:dev:${device}:${today}`, DAILY_PER_DEVICE, DAY_TTL))) {
-    return res.status(429).json({ error: 'quota_exceeded' })
+  // Ració diària per dispositiu: capturem el recompte per informar-ne el client.
+  let used = 0
+  if (device) {
+    const n = await bump(`q:dev:${device}:${today}`, DAY_TTL)
+    if (n !== null) {
+      used = n
+      if (n > DAILY_PER_DEVICE) {
+        return res
+          .status(429)
+          .json({ error: 'quota_exceeded', limit: DAILY_PER_DEVICE, used: n })
+      }
+    }
   }
 
   // Context opcional (com es sent + quant temps) per afinar el desglossament.
@@ -214,7 +226,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(502).json({ error: 'empty' })
     }
 
-    return res.status(200).json({ steps })
+    return res.status(200).json({ steps, used, limit: DAILY_PER_DEVICE })
   } catch (err) {
     console.error('breakdown error', err)
     return res.status(500).json({ error: 'internal' })

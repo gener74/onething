@@ -13,6 +13,11 @@ export interface Breakdown {
   steps: string[]
   /** true si ve de la IA real; false si és el fallback local. */
   fromAI: boolean
+  /** Quants desglossaments d'IA porta avui aquest dispositiu, i el límit diari. */
+  used?: number
+  limit?: number
+  /** true si s'ha arribat al límit diari (i per això surt el fallback). */
+  limited?: boolean
 }
 
 /** Com se sent l'usuari davant la tasca (context per ajustar to i mida del pas). */
@@ -55,10 +60,28 @@ export async function breakdownTask(
         device: deviceId(),
       }),
     })
-    if (res.ok) {
-      const data = (await res.json()) as { steps?: string[] }
-      if (Array.isArray(data.steps) && data.steps.length > 0) {
-        return { steps: data.steps.map(String), fromAI: true }
+    const data = (await res.json().catch(() => null)) as {
+      steps?: string[]
+      used?: number
+      limit?: number
+      error?: string
+    } | null
+
+    if (res.ok && data && Array.isArray(data.steps) && data.steps.length > 0) {
+      return {
+        steps: data.steps.map(String),
+        fromAI: true,
+        used: data.used,
+        limit: data.limit,
+      }
+    }
+    // Límit diari assolit → fallback, però marcat perquè la UI ho expliqui amablement.
+    if (res.status === 429 && data?.error === 'quota_exceeded') {
+      return {
+        steps: heuristicBreakdown(title, ctx),
+        fromAI: false,
+        limited: true,
+        limit: data.limit,
       }
     }
   } catch {

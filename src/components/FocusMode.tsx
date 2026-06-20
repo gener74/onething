@@ -45,6 +45,9 @@ export function FocusMode({
   // Check-in en acabar el temps + microcelebració de l'arrencada.
   const [distracted, setDistracted] = useState(false)
   const [cheer, setCheer] = useState(false)
+  // Quota diària de la IA: si s'ha arribat al límit i quants en queden avui.
+  const [aiLimited, setAiLimited] = useState(false)
+  const [aiRemaining, setAiRemaining] = useState<number | null>(null)
 
   // El primer pas pendent és el nostre "únic objectiu ara". Mai ensenyem la
   // llista sencera: una sola cosa a la vegada (menys càrrega cognitiva).
@@ -112,6 +115,8 @@ export function FocusMode({
     setElapsed(0)
     setFeeling(null)
     setPhase('feeling')
+    setAiLimited(false)
+    setAiRemaining(null)
   }
 
   async function startBreakdown(minutes: number) {
@@ -119,12 +124,16 @@ export function FocusMode({
     setElapsed(0) // el compte enrere arrenca des del temps sencer
     setLoading(true)
     try {
-      const { steps } = await breakdownTask(task.title, {
+      const { steps, limited, used, limit } = await breakdownTask(task.title, {
         feeling: feeling ?? undefined,
         minutes,
         lang,
       })
       onSteps(steps)
+      setAiLimited(!!limited)
+      setAiRemaining(
+        limit != null && used != null ? Math.max(limit - used, 0) : null,
+      )
     } finally {
       setLoading(false)
     }
@@ -214,6 +223,14 @@ export function FocusMode({
               />
             ))}
           </div>
+
+          {aiLimited ? (
+            <p className="mb-4 max-w-xs text-xs leading-relaxed text-muted">
+              {t('ai_limit_reached')}
+            </p>
+          ) : aiRemaining !== null && aiRemaining > 0 && aiRemaining <= 3 ? (
+            <p className="mb-4 text-xs text-muted/70">{tn('ai_remaining', aiRemaining)}</p>
+          ) : null}
 
           <button
             onClick={completeStep}
