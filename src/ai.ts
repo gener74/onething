@@ -28,6 +28,8 @@ export interface BreakdownContext {
   feeling?: Feeling
   minutes?: number
   lang?: 'en' | 'ca' | 'es'
+  /** L'usuari troba el pas massa gran → demana passos encara més petits. */
+  simpler?: boolean
 }
 
 /**
@@ -57,6 +59,7 @@ export async function breakdownTask(
         feeling: ctx.feeling,
         minutes: ctx.minutes,
         lang: ctx.lang,
+        simpler: ctx.simpler,
         device: deviceId(),
       }),
     })

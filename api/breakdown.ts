@@ -181,6 +181,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
   const feeling = typeof req.body?.feeling === 'string' ? req.body.feeling : ''
   const minutes = Number(req.body?.minutes)
+  const simpler = req.body?.simpler === true
   const LANG_NAME: Record<string, string> = { en: 'English', ca: 'Catalan', es: 'Spanish' }
   const lang = LANG_NAME[req.body?.lang as string] ?? 'English'
   const ctxParts: string[] = []
@@ -203,7 +204,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       messages: [
         {
           role: 'user',
-          content: `Parteix aquesta tasca en micro-passos: "${safeTitle}"${ctxLine}\n\nIdioma de la resposta: ${lang}. Escriu TOTS els passos en aquest idioma.`,
+          content: `Parteix aquesta tasca en micro-passos: "${safeTitle}"${ctxLine}${
+            simpler
+              ? `\n\nIMPORTANT: l'usuari troba aquest pas massa gran. Fes passos encara MÉS petits i trivials del que faries normalment; el primer ha de poder-se fer en ~30 segons.`
+              : ''
+          }\n\nIdioma de la resposta: ${lang}. Escriu TOTS els passos en aquest idioma.`,
         },
       ],
     })

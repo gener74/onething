@@ -2,8 +2,8 @@
 
 # OneThing — _una cosa a la vegada_
 
-**A calm focus tool for ADHD brains: it gets you started.**
-When a task paralyses you, it breaks it into one tiny step and stays with you until you’ve begun — not another to-do list. Local-first, no accounts.
+**A calm tool for people who get stuck before starting.**
+Not another to-do list — a coach that helps you begin.
 
 [**Live demo →**](https://getonething.vercel.app) · _private preview, password: `onething`_
 
@@ -20,9 +20,13 @@ When a task paralyses you, it breaks it into one tiny step and stays with you un
 
 ## Why
 
-Most to-do apps make ADHD worse: long lists, dates that expire and pile up guilt, and the silent question _“where do I even start?”_. **OneThing** does the opposite. You brain-dump without friction, sort into three soft drawers (not dates), and when a task paralyses you, it doesn’t hand you a plan — **it walks you to the first 2-minute step and stays with you until you’ve started.**
+> You know what you need to do.
+> You’ve known it for days.
+> You still haven’t started.
 
-I built it because I live this: I’m my own target user. It’s also a deliberate exercise in calm, _spa-digital_ product design and in a genuinely **local-first** architecture.
+**OneThing gets you started.** When a task paralyses you, it doesn’t hand you a plan — it breaks it into one tiny step and stays with you until you’ve begun. **Open it when you’re stuck; leave when you’ve started.**
+
+Built for ADHD brains — and anyone who freezes in front of a big task. Most to-do apps make that worse: long lists, dates that expire into guilt, and the silent _“where do I even start?”_. I built it because I live this — I’m my own target user. It’s also a deliberate exercise in calm, _spa-digital_ design and a genuinely **local-first** architecture.
 
 > The difference from ChatGPT: ChatGPT gives you a plan. OneThing accompanies you until you begin.
 
@@ -30,7 +34,7 @@ I built it because I live this: I’m my own target user. It’s also a delibera
 
 The heart of it — **“I don’t know where to start”:**
 
-- **It gets you started.** Real Claude splits the paralysing task into tiny, concrete micro-steps, shown **one at a time** — never the whole list.
+- **It gets you started.** It breaks the paralysing task into tiny, concrete actions, shown **one at a time** — never the whole list.
 - **Context-aware.** First it asks _how you feel_ and _how much time_ you have, so the very first step fits your state right now.
 - **Coach, not manager.** A gentle check-in when your time’s up — _“distracted? no problem, let’s go back: open the document.”_ No judgement, no guilt. A quiet “you’ve started” after the first step.
 
@@ -40,6 +44,20 @@ The calm scaffolding around it:
 - **Frictionless capture** — brain-dump in one field; sort into three soft drawers `Ara` / `Després` / `Algun dia` (Now / Later / Someday). No dates, on purpose.
 - **Calm reward** — a sage moment when you finish, plus a soft per-day count. No streaks, no pressure.
 - **100% local & installable** — your data never leaves the device; works offline as an installable PWA.
+
+## A real session
+
+**Task:** _Prepare the monthly service review_
+
+> → Open last month’s presentation — _done_
+> → Read the conclusions slide — _done_
+> → Write one improvement point
+
+You didn’t plan the whole review. You just started it.
+
+## Who it’s for
+
+People with **ADHD** · students · knowledge workers · founders · anyone overwhelmed by a large task.
 
 ## Interesting engineering decisions
 
@@ -80,8 +98,8 @@ The AI lives in the serverless function `api/breakdown.ts` and needs a Claude ke
 
 # 🌿 OneThing — _una cosa a la vegada_
 
-**Una eina de focus calmada per a cervells amb TDAH: t’ajuda a començar.**
-Quan una tasca et paralitza, la parteix en un sol pas petit i es queda amb tu fins que has començat — no és una altra llista de tasques. Local-first, sense comptes.
+**Una eina calmada per a qui s’encalla abans de començar.**
+No és una altra llista de tasques — un coach que t’ajuda a arrencar.
 
 [**Prova la demo →**](https://getonething.vercel.app) · _versió privada, contrasenya: `onething`_
 
@@ -89,9 +107,13 @@ Quan una tasca et paralitza, la parteix en un sol pas petit i es queda amb tu fi
 
 ## Per què
 
-La majoria d’apps de tasques empitjoren el TDAH: llistes infinites, dates que caduquen i acumulen culpa, i la pregunta silenciosa _“per on començo?”_. **OneThing** fa el contrari. Buides el cap sense fricció, ho classifiques en tres calaixos suaus (no dates) i, quan una tasca et paralitza, no et dóna un pla — **t’acompanya fins al primer pas de 2 minuts i es queda amb tu fins que has començat.**
+> Saps què has de fer.
+> Fa dies que ho saps.
+> Encara no has començat.
 
-L’he fet perquè ho visc: sóc el meu propi usuari objectiu. És també un exercici conscient de disseny calmat (_“spa digital”_) i d’una arquitectura de debò **local-first**.
+**OneThing t’ajuda a començar.** Quan una tasca et paralitza, no et dóna un pla — la parteix en un sol pas petit i es queda amb tu fins que has arrencat. **Obre-la quan estiguis encallat; surt quan ja has començat.**
+
+Pensada per a cervells amb TDAH — i per a qualsevol que es bloqueja davant d’una tasca gran. La majoria d’apps ho empitjoren: llistes infinites, dates que caduquen en culpa i el silenciós _“per on començo?”_. L’he feta perquè ho visc — sóc el meu propi usuari objectiu. És també un exercici conscient de disseny calmat (_“spa digital”_) i d’una arquitectura de debò **local-first**.
 
 > La diferència amb ChatGPT: ChatGPT et dóna un pla. OneThing t’acompanya fins que comences.
 
@@ -99,7 +121,7 @@ L’he fet perquè ho visc: sóc el meu propi usuari objectiu. És també un exe
 
 El moll de l’os — **“No sé per on començar”:**
 
-- **T’ajuda a començar.** Claude de debò parteix la tasca que et paralitza en micro-passos concrets, mostrats **un a un** — mai la llista sencera.
+- **T’ajuda a començar.** Parteix la tasca que et paralitza en accions concretes i petites, mostrades **una a una** — mai la llista sencera.
 - **Amb context.** Primer et pregunta _com et sents_ i _quant temps_ tens, perquè el primer pas s’ajusti al teu estat d’ara mateix.
 - **Coach, no gestor.** Un check-in suau en acabar el temps — _“t’has distret? cap problema, tornem-hi: obre el document.”_ Sense judici, sense culpa. I un discret “ja has començat” al primer pas.
 
@@ -109,6 +131,20 @@ L’escenari calmat al voltant:
 - **Captura sense fricció** — brain dump en un sol camp; classifica en tres calaixos `Ara` / `Després` / `Algun dia`. Sense dates, a propòsit.
 - **Recompensa calmada** — un instant sàlvia en acabar i un recompte del dia. Sense ratxes ni pressió.
 - **100% local i instal·lable** — les dades no surten mai del dispositiu; funciona offline com a PWA.
+
+## Una sessió real
+
+**Tasca:** _Preparar la revisió mensual del servei_
+
+> → Obre la presentació del mes passat — _fet_
+> → Llegeix la diapositiva de conclusions — _fet_
+> → Escriu un punt de millora
+
+No has planificat tota la revisió. Simplement l’has començat.
+
+## Per a qui és
+
+Persones amb **TDAH** · estudiants · professionals del coneixement · fundadors · qualsevol que se senti aclaparat per una tasca gran.
 
 ## Decisions tècniques interessants
 

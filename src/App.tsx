@@ -32,7 +32,8 @@ export default function App() {
   const { t, tn } = useI18n()
   const [draft, setDraft] = useState('')
   const [focusId, setFocusId] = useState<number | null>(null)
-  const [celebrate, setCelebrate] = useState(false)
+  const [reward, setReward] = useState<string | null>(null)
+  const [reflect, setReflect] = useState(false)
   const [completingId, setCompletingId] = useState<number | null>(null)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editDraft, setEditDraft] = useState('')
@@ -71,12 +72,24 @@ export default function App() {
     setDraft('')
   }
 
-  async function handleComplete(id: number) {
+  function showReward(key: string) {
+    setReward(key)
+    setTimeout(() => setReward(null), 1600)
+  }
+
+  // doReflect = ve d'una sessió de focus → preguntem "com et sents ara?" (reflexió
+  // local, no s'envia enlloc). Completar des de la llista no ho pregunta.
+  async function handleComplete(id: number, doReflect = false) {
     await completeTask(id)
     navigator.vibrate?.(15) // toc hàptic suau al mòbil (si el navegador ho suporta)
     setFocusId(null)
-    setCelebrate(true)
-    setTimeout(() => setCelebrate(false), 1600)
+    if (doReflect) setReflect(true)
+    else showReward('reward')
+  }
+
+  function answerReflect() {
+    setReflect(false)
+    showReward('feel_thanks')
   }
 
   // Treu la paràlisi de decisió: tria una tasca de "Ara" a l'atzar i entra-hi.
@@ -328,12 +341,18 @@ export default function App() {
           <LangSwitcher />
           <ThemeToggle />
         </div>
-        <button
-          onClick={() => setShowPrivacy(true)}
-          className="text-[11px] text-muted/60 transition hover:text-ink"
-        >
-          {t('privacy')}
-        </button>
+        <div className="flex items-center gap-3 text-[11px] text-muted/60">
+          <button onClick={() => setShowPrivacy(true)} className="transition hover:text-ink">
+            {t('privacy')}
+          </button>
+          <span aria-hidden>·</span>
+          <a
+            href="mailto:eduard@queralto.cat?subject=OneThing"
+            className="transition hover:text-ink"
+          >
+            {t('feedback')}
+          </a>
+        </div>
         <p className="text-[11px] text-muted/50">Ward Technologies Inc.</p>
       </footer>
 
@@ -342,7 +361,7 @@ export default function App() {
         <FocusMode
           task={focusTask}
           onClose={() => setFocusId(null)}
-          onComplete={() => handleComplete(focusTask.id)}
+          onComplete={() => handleComplete(focusTask.id, true)}
           onSteps={(steps) => setSteps(focusTask.id, steps)}
           onMinutes={(minutes) => setFocusMinutes(focusTask.id, minutes)}
           onToggleStep={(index) => toggleStep(focusTask.id, index)}
@@ -363,12 +382,30 @@ export default function App() {
       {/* Nota de privacitat */}
       {showPrivacy && <Privacy onClose={() => setShowPrivacy(false)} />}
 
+      {/* Reflexió final d'una sessió de focus: com et sents ara? (local) */}
+      {reflect && (
+        <div className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-paper/95 px-6 text-center animate-rise">
+          <p className="mb-8 text-xl font-medium text-ink">{t('feel_now_q')}</p>
+          <div className="flex w-full max-w-xs flex-col gap-2.5">
+            {(['feel_better', 'feel_same', 'feel_worse'] as const).map((k) => (
+              <button
+                key={k}
+                onClick={answerReflect}
+                className="rounded-[var(--radius-soft)] border border-line bg-surface px-5 py-3.5 text-ink transition hover:border-sage hover:text-sage-deep"
+              >
+                {t(k)}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Recompensa */}
-      {celebrate && (
+      {reward && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-paper/80 backdrop-blur-sm animate-rise">
           <div className="text-center">
             <div className="mb-3 text-5xl">🌿</div>
-            <p className="text-lg text-sage-deep">{t('reward')}</p>
+            <p className="text-lg text-sage-deep">{t(reward)}</p>
           </div>
         </div>
       )}

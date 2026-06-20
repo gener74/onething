@@ -25,6 +25,9 @@ const FEELINGS: Feeling[] = ['clar', 'mandra', 'bloquejat', 'ansietat']
 // 0 = sense límit (cap compte enrere ni check-in).
 const TIMES = [2, 5, 15, 30, 0]
 
+// Quantes vegades es pot demanar "Massa gran" en una sessió (evita l'espiral infinita).
+const MAX_SIMPLER = 2
+
 export function FocusMode({
   task,
   onClose,
@@ -48,6 +51,8 @@ export function FocusMode({
   // Quota diària de la IA: si s'ha arribat al límit i quants en queden avui.
   const [aiLimited, setAiLimited] = useState(false)
   const [aiRemaining, setAiRemaining] = useState<number | null>(null)
+  // Quantes vegades s'ha demanat "Massa gran" en aquesta sessió.
+  const [simplerCount, setSimplerCount] = useState(0)
 
   // El primer pas pendent és el nostre "únic objectiu ara". Mai ensenyem la
   // llista sencera: una sola cosa a la vegada (menys càrrega cognitiva).
@@ -117,6 +122,32 @@ export function FocusMode({
     setPhase('feeling')
     setAiLimited(false)
     setAiRemaining(null)
+    setSimplerCount(0)
+  }
+
+  // "Massa gran": parteix el pas actual en passos encara més petits (amb límit).
+  async function makeSmaller() {
+    if (simplerCount >= MAX_SIMPLER || currentIndex === -1) return
+    setLoading(true)
+    try {
+      const { steps: smaller, limited, used, limit } = await breakdownTask(
+        steps[currentIndex],
+        {
+          feeling: feeling ?? undefined,
+          minutes: task.focusMinutes || undefined,
+          lang,
+          simpler: true,
+        },
+      )
+      onSteps(smaller)
+      setSimplerCount((c) => c + 1)
+      setAiLimited(!!limited)
+      setAiRemaining(
+        limit != null && used != null ? Math.max(limit - used, 0) : null,
+      )
+    } finally {
+      setLoading(false)
+    }
   }
 
   async function startBreakdown(minutes: number) {
@@ -130,6 +161,7 @@ export function FocusMode({
         lang,
       })
       onSteps(steps)
+      setSimplerCount(0)
       setAiLimited(!!limited)
       setAiRemaining(
         limit != null && used != null ? Math.max(limit - used, 0) : null,
@@ -239,9 +271,18 @@ export function FocusMode({
             {isLastPending ? t('done_check') : t('done_next')}
           </button>
 
+          {simplerCount < MAX_SIMPLER && (
+            <button
+              onClick={makeSmaller}
+              className="mt-4 rounded-full border border-line bg-surface px-5 py-2 text-sm text-muted transition hover:border-sage hover:text-sage-deep"
+            >
+              {t('too_big')}
+            </button>
+          )}
+
           <button
             onClick={regenerate}
-            className="mt-6 text-sm text-muted transition hover:text-ink"
+            className="mt-4 text-sm text-muted transition hover:text-ink"
           >
             {t('regen')}
           </button>
