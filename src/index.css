@@ -106,7 +106,8 @@ body {
   animation: pulse-soft 1.4s ease-in-out infinite;
 }
 
-/* Fons relaxant de l'estat buit: fulles de sàlvia que cauen lentes i deriven. */
+/* Fons relaxant de l'estat buit: fulles de roure de tardor que cauen i deriven.
+   La forma i el color els posa l'SVG (component Leaves); aquí només el moviment. */
 @keyframes leaf-fall {
   0% {
     transform: translate3d(0, -12vh, 0) rotate(0deg);
@@ -114,10 +115,10 @@ body {
   }
   12%,
   82% {
-    opacity: 0.5;
+    opacity: 0.65;
   }
   100% {
-    transform: translate3d(var(--drift, 24px), 88vh, 0) rotate(200deg);
+    transform: translate3d(var(--drift, 24px), 88vh, 0) rotate(220deg);
     opacity: 0;
   }
 }
@@ -125,8 +126,6 @@ body {
 .leaf {
   position: absolute;
   top: 0;
-  border-radius: 0 100% 0 100%; /* forma de fulla/pètal */
-  background: var(--color-sage);
   opacity: 0;
   pointer-events: none;
   animation: leaf-fall linear infinite;
