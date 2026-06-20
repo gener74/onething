@@ -87,3 +87,21 @@ body {
 .animate-breathe {
   animation: breathe 4s ease-in-out infinite;
 }
+
+/* Punts d'espera: pulsació suau i esglaonada mentre tries o la IA pensa
+   (omple el cercle abans que hi hagi compte enrere). */
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 1.4s ease-in-out infinite;
+}

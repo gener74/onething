@@ -15,6 +15,8 @@ export interface Task {
   steps?: string[]
   /** Índexs dels micro-passos ja marcats com a fets (recompensa pas a pas). */
   doneSteps?: number[]
+  /** Minuts que l'usuari s'ha donat per a aquesta tasca (compte enrere al Mode Focus). */
+  focusMinutes?: number
   /** 0 = pendent, 1 = feta. (IndexedDB no pot indexar booleans.) */
   done: 0 | 1
   createdAt: number
@@ -69,6 +71,11 @@ export function setSteps(id: number, steps: string[]) {
   return db.tasks.update(id, { steps, doneSteps: [] })
 }
 
+/** Minuts que l'usuari es dóna ara per a la tasca (alimenta el compte enrere). */
+export function setFocusMinutes(id: number, minutes: number) {
+  return db.tasks.update(id, { focusMinutes: minutes })
+}
+
 /** Marca/desmarca un micro-pas pel seu índex. */
 export function toggleStep(id: number, index: number) {
   return db.transaction('rw', db.tasks, async () => {
@@ -83,6 +90,11 @@ export function toggleStep(id: number, index: number) {
 
 export function completeTask(id: number) {
   return db.tasks.update(id, { done: 1, completedAt: Date.now() })
+}
+
+/** Torna una tasca feta cap als calaixos (desfer). Manté el calaix que tenia. */
+export function reopenTask(id: number) {
+  return db.tasks.update(id, { done: 0, completedAt: undefined })
 }
 
 export function deleteTask(id: number) {

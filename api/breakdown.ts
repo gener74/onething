@@ -35,6 +35,14 @@ Regles:
 - Sempre en català.
 - No afegeixis introduccions, números ni explicacions: només els passos.
 
+Opcionalment rebràs context sobre com es sent l'usuari i quant temps té ara. Si hi és, fes-lo servir:
+- Adapta el TO a l'emoció. Bloquejat o amb ansietat → fes el primer pas encara més petit, concret
+  i tranquil·litzador (treure por d'equivocar-se). Mandra / poca energia → fes-lo trivial i sense
+  compromís ("només obrir", "només mirar"). Ho té clar → ves al gra, sense embuts.
+- Ajusta la mida del PRIMER pas al temps disponible: amb pocs minuts (2-5), un sol gest mínim
+  que càpiga de sobres en aquell temps; amb més temps (15-30), el primer pas pot ser una mica
+  més substancial, però sempre arrencable de seguida i sense pensar.
+
 Exemple del nivell de concreció esperat —
 Tasca: "fer la declaració de la renda"
 Passos:
@@ -119,6 +127,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Tallem entrades absurdament llargues: és un títol de tasca, no un assaig.
   const safeTitle = title.slice(0, 500)
 
+  // Context opcional (com es sent + quant temps) per afinar el desglossament.
+  const FEELINGS: Record<string, string> = {
+    clar: 'Ho té clar i vol arrencar.',
+    mandra: 'Li fa mandra, té poca energia.',
+    bloquejat: 'Se sent bloquejat, no sap per on començar.',
+    ansietat: 'La tasca li genera ansietat.',
+  }
+  const feeling = typeof req.body?.feeling === 'string' ? req.body.feeling : ''
+  const minutes = Number(req.body?.minutes)
+  const ctxParts: string[] = []
+  if (FEELINGS[feeling]) ctxParts.push(`Com es sent ara: ${FEELINGS[feeling]}`)
+  if (Number.isFinite(minutes) && minutes > 0) {
+    ctxParts.push(`Temps disponible ara mateix: ${minutes} minuts.`)
+  }
+  const ctxLine = ctxParts.length
+    ? `\n\nContext de l'usuari:\n- ${ctxParts.join('\n- ')}`
+    : ''
+
   try {
     const message = await client.messages.create({
       model: 'claude-sonnet-4-6',
@@ -133,7 +159,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       messages: [
         {
           role: 'user',
-          content: `Parteix aquesta tasca en micro-passos: "${safeTitle}"`,
+          content: `Parteix aquesta tasca en micro-passos: "${safeTitle}"${ctxLine}`,
         },
       ],
     })

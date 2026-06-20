@@ -15,12 +15,24 @@ export interface Breakdown {
   fromAI: boolean
 }
 
-export async function breakdownTask(title: string): Promise<Breakdown> {
+/** Com se sent l'usuari davant la tasca (context per ajustar to i mida del pas). */
+export type Feeling = 'clar' | 'mandra' | 'bloquejat' | 'ansietat'
+
+/** Context opcional que millora el desglossament: emoció + temps disponible. */
+export interface BreakdownContext {
+  feeling?: Feeling
+  minutes?: number
+}
+
+export async function breakdownTask(
+  title: string,
+  ctx: BreakdownContext = {},
+): Promise<Breakdown> {
   try {
     const res = await fetch('/api/breakdown', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title }),
+      body: JSON.stringify({ title, feeling: ctx.feeling, minutes: ctx.minutes }),
     })
     if (res.ok) {
       const data = (await res.json()) as { steps?: string[] }
@@ -31,18 +43,20 @@ export async function breakdownTask(title: string): Promise<Breakdown> {
   } catch {
     // sense xarxa o endpoint no disponible → fallback
   }
-  return { steps: heuristicBreakdown(title), fromAI: false }
+  return { steps: heuristicBreakdown(title, ctx), fromAI: false }
 }
 
 /**
  * Fallback local: no és intel·ligent, però dóna una empenta inicial coherent
- * mentre no tinguem la IA real connectada.
+ * mentre no tinguem la IA real connectada. Fa servir el temps triat si n'hi ha.
  */
-function heuristicBreakdown(title: string): string[] {
+function heuristicBreakdown(title: string, ctx: BreakdownContext = {}): string[] {
   const t = title.trim().replace(/\.$/, '')
+  const m = ctx.minutes && ctx.minutes > 0 ? ctx.minutes : 0
+  const dur = m > 0 ? `${m} ${m === 1 ? 'minut' : 'minuts'}` : 'una estona curta'
   return [
     `Obre o prepara el que necessites per a: "${t}" (només això).`,
-    'Fes-ne la part més petita possible durant 2 minuts.',
-    'Quan portis 2 minuts, decideix si continues o pares.',
+    `Fes-ne la part més petita possible durant ${dur}.`,
+    `Quan portis ${dur}, decideix si continues o pares.`,
   ]
 }

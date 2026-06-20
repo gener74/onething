@@ -5,8 +5,10 @@ import {
   addTask,
   moveTask,
   completeTask,
+  reopenTask,
   deleteTask,
   setSteps,
+  setFocusMinutes,
   toggleStep,
   isToday,
   exportTasks,
@@ -15,6 +17,8 @@ import {
   type Task,
 } from './db'
 import { FocusMode } from './components/FocusMode'
+import { DoneList } from './components/DoneList'
+import { InstallHint } from './components/InstallHint'
 import { Mark } from './components/Mark'
 
 const BUCKETS: { key: Bucket; label: string }[] = [
@@ -27,6 +31,8 @@ export default function App() {
   const [draft, setDraft] = useState('')
   const [focusId, setFocusId] = useState<number | null>(null)
   const [celebrate, setCelebrate] = useState(false)
+  const [completingId, setCompletingId] = useState<number | null>(null)
+  const [showDone, setShowDone] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -38,6 +44,11 @@ export default function App() {
       ).length,
     [],
   )
+  // Historial de fetes, de més recent a més antiga (per al panell "Fetes").
+  const doneTasks = useLiveQuery(async () => {
+    const arr = await db.tasks.where('done').equals(1).sortBy('completedAt')
+    return arr.reverse()
+  }, [])
 
   const byBucket = useMemo(() => {
     const map: Record<Bucket, Task[]> = { now: [], next: [], someday: [] }
@@ -60,6 +71,16 @@ export default function App() {
     setFocusId(null)
     setCelebrate(true)
     setTimeout(() => setCelebrate(false), 1600)
+  }
+
+  // Marcar feta des de la llista: omple el cercle un instant (feedback clar, també
+  // al mòbil) abans de completar i mostrar la recompensa.
+  function markDone(id: number) {
+    setCompletingId(id)
+    setTimeout(() => {
+      handleComplete(id)
+      setCompletingId(null)
+    }, 220)
   }
 
   function flashNotice(msg: string) {
@@ -104,22 +125,30 @@ export default function App() {
           <Mark className="h-7 w-7" breathe />
           <h1 className="text-2xl font-medium tracking-tight text-ink">Onething</h1>
         </div>
-        {completedToday ? (
-          <span
-            className="flex items-center gap-1"
-            title={`${completedToday} ${completedToday === 1 ? 'feta' : 'fetes'} avui`}
-            aria-label={`${completedToday} ${completedToday === 1 ? 'feta' : 'fetes'} avui`}
-          >
-            {Array.from({ length: Math.min(completedToday, 7) }).map((_, i) => (
-              <span key={i} className="h-1.5 w-1.5 rounded-full bg-sage animate-rise" />
-            ))}
-            {completedToday > 7 && (
-              <span className="ml-0.5 text-xs text-muted">+{completedToday - 7}</span>
-            )}
-          </span>
-        ) : (
-          <span className="text-sm text-muted">comencem</span>
-        )}
+        <button
+          onClick={() => setShowDone(true)}
+          title="Veure les tasques fetes"
+          aria-label={
+            completedToday
+              ? `${completedToday} ${completedToday === 1 ? 'feta' : 'fetes'} avui. Veure les fetes.`
+              : 'Veure les tasques fetes'
+          }
+          className="flex items-center gap-1 rounded-full px-1 transition hover:opacity-70"
+        >
+          {completedToday ? (
+            <>
+              {Array.from({ length: Math.min(completedToday, 7) }).map((_, i) => (
+                <span key={i} className="h-1.5 w-1.5 rounded-full bg-sage animate-rise" />
+              ))}
+              {completedToday > 7 && (
+                <span className="ml-0.5 text-xs text-muted">+{completedToday - 7}</span>
+              )}
+              <span className="ml-1.5 text-xs text-muted">avui</span>
+            </>
+          ) : (
+            <span className="text-sm text-muted">comencem</span>
+          )}
+        </button>
       </header>
 
       {/* Brain dump: sense fricció, un sol camp + botó (Enter també funciona) */}
@@ -168,6 +197,18 @@ export default function App() {
                     key={t.id}
                     className="group flex items-center gap-2 rounded-[var(--radius-soft)] border border-line bg-surface px-4 py-3 animate-rise"
                   >
+                    <button
+                      onClick={() => markDone(t.id)}
+                      aria-label="Marcar com a feta"
+                      title="Marcar com a feta"
+                      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 text-xs transition ${
+                        completingId === t.id
+                          ? 'scale-110 border-sage bg-sage text-white'
+                          : 'border-sage/40 text-transparent hover:border-sage hover:text-sage/70'
+                      }`}
+                    >
+                      ✓
+                    </button>
                     <span className="flex-1 text-ink">{t.title}</span>
 
                     {key === 'now' && (
@@ -198,17 +239,25 @@ export default function App() {
       )}
 
       {/* Portabilitat discreta: emporta't les teves dades */}
-      <footer className="mt-12 flex flex-col items-center gap-2">
+      <footer className="mt-12 flex flex-col items-center gap-2 text-center">
+        <p className="max-w-xs text-xs text-muted/70">
+          Les teves dades viuen només en aquest dispositiu.
+        </p>
         <div className="flex items-center gap-3 text-xs text-muted/70">
-          <button onClick={handleExport} className="transition hover:text-ink">
-            Exporta
+          <button
+            onClick={handleExport}
+            title="Baixa un fitxer amb totes les teves tasques, per guardar-lo o passar-lo a un altre dispositiu"
+            className="transition hover:text-ink"
+          >
+            Desa una còpia
           </button>
           <span aria-hidden>·</span>
           <button
             onClick={() => fileInputRef.current?.click()}
+            title="Recupera les tasques des d'un fitxer que havies desat"
             className="transition hover:text-ink"
           >
-            Importa
+            Recupera
           </button>
           <input
             ref={fileInputRef}
@@ -219,6 +268,7 @@ export default function App() {
           />
         </div>
         {notice && <p className="text-sm text-sage-deep">{notice}</p>}
+        <InstallHint />
         <p className="mt-1 text-[11px] text-muted/50">Ward Technologies Inc.</p>
       </footer>
 
@@ -227,8 +277,8 @@ export default function App() {
         <FocusMode
           task={focusTask}
           onClose={() => setFocusId(null)}
-          onComplete={() => handleComplete(focusTask.id)}
           onSteps={(steps) => setSteps(focusTask.id, steps)}
+          onMinutes={(minutes) => setFocusMinutes(focusTask.id, minutes)}
           onToggleStep={async (index) => {
             const t = focusTask
             const total = t.steps?.length ?? 0
@@ -241,6 +291,15 @@ export default function App() {
               handleComplete(t.id)
             }
           }}
+        />
+      )}
+
+      {/* Panell de tasques fetes */}
+      {showDone && (
+        <DoneList
+          tasks={doneTasks ?? []}
+          onClose={() => setShowDone(false)}
+          onReopen={(id) => reopenTask(id)}
         />
       )}
 
