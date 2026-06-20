@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Task } from '../db'
 import { breakdownTask, type Feeling } from '../ai'
+import { useI18n } from '../i18n'
 
 interface Props {
   task: Task
@@ -17,23 +18,13 @@ function fmt(s: number) {
   return `${m}:${r.toString().padStart(2, '0')}`
 }
 
-const FEELINGS: { key: Feeling; label: string }[] = [
-  { key: 'clar', label: 'Ho tinc clar' },
-  { key: 'mandra', label: 'Em fa mandra' },
-  { key: 'bloquejat', label: 'Estic bloquejat' },
-  { key: 'ansietat', label: 'Em genera ansietat' },
-]
+const FEELINGS: Feeling[] = ['clar', 'mandra', 'bloquejat', 'ansietat']
 
-// minutes: 0 = sense límit (cap compte enrere ni check-in).
-const TIMES: { label: string; minutes: number }[] = [
-  { label: '2 minuts', minutes: 2 },
-  { label: '5 minuts', minutes: 5 },
-  { label: '15 minuts', minutes: 15 },
-  { label: '30 minuts', minutes: 30 },
-  { label: 'Sense límit', minutes: 0 },
-]
+// 0 = sense límit (cap compte enrere ni check-in).
+const TIMES = [2, 5, 15, 30, 0]
 
 export function FocusMode({ task, onClose, onSteps, onToggleStep, onMinutes }: Props) {
+  const { t, tn, lang } = useI18n()
   const doneSteps = new Set(task.doneSteps ?? [])
   const steps = task.steps ?? []
   const hasSteps = steps.length > 0
@@ -44,7 +35,7 @@ export function FocusMode({ task, onClose, onSteps, onToggleStep, onMinutes }: P
   const [feeling, setFeeling] = useState<Feeling | null>(null)
   // Check-in en acabar el temps + microcelebració de l'arrencada.
   const [distracted, setDistracted] = useState(false)
-  const [cheer, setCheer] = useState<string | null>(null)
+  const [cheer, setCheer] = useState(false)
 
   // El primer pas pendent és el nostre "únic objectiu ara". Mai ensenyem la
   // llista sencera: una sola cosa a la vegada (menys càrrega cognitiva).
@@ -52,15 +43,13 @@ export function FocusMode({ task, onClose, onSteps, onToggleStep, onMinutes }: P
   const showStep = currentIndex !== -1
   const isLastPending = doneSteps.size === steps.length - 1
 
-  // El cercle: compte enrere del temps que t'has donat (calma, no pressió). Si no
-  // n'has triat cap, queda buit — sense comptador que puja.
+  // El cercle: compte enrere del temps que t'has donat (calma, no pressió).
   const total = (task.focusMinutes ?? 0) * 60
   const remaining = Math.max(total - elapsed, 0)
   // Check-in derivat: quan s'esgota el temps triat, el panell apareix sol.
   const timeUp = showStep && total > 0 && elapsed >= total
 
-  // El compte enrere només corre quan ja hi ha un pas a la vista (la IA ha
-  // respost). Mentre tries / esperes "Pensant…", el temps no s'esgota.
+  // El compte enrere només corre quan ja hi ha un pas a la vista (la IA ha respost).
   useEffect(() => {
     if (!showStep) return
     const id = setInterval(() => setElapsed((e) => e + 1), 1000)
@@ -81,8 +70,8 @@ export function FocusMode({ task, onClose, onSteps, onToggleStep, onMinutes }: P
     onToggleStep(currentIndex)
     // Celebrar l'arrencada: el primer pas és el més difícil per a un cervell TDAH.
     if (wasFirst && !isLastPending) {
-      setCheer('Ja has començat.')
-      setTimeout(() => setCheer(null), 1600)
+      setCheer(true)
+      setTimeout(() => setCheer(false), 1600)
     }
   }
 
@@ -111,6 +100,7 @@ export function FocusMode({ task, onClose, onSteps, onToggleStep, onMinutes }: P
       const { steps } = await breakdownTask(task.title, {
         feeling: feeling ?? undefined,
         minutes,
+        lang,
       })
       onSteps(steps)
     } finally {
@@ -118,22 +108,21 @@ export function FocusMode({ task, onClose, onSteps, onToggleStep, onMinutes }: P
     }
   }
 
+  const timeLabel = (m: number) => (m === 0 ? t('no_limit') : tn('minutes', m))
+
   return (
-    // Contenidor amb scroll: min-h-full + justify-center centra quan hi cap i
-    // deixa fer scroll quan no hi cap (pantalles petites).
     <div className="fixed inset-0 z-50 overflow-y-auto bg-paper">
       <button
         onClick={onClose}
         className="fixed top-5 right-5 z-10 text-sm text-muted hover:text-ink transition-colors"
-        aria-label="Tancar el mode focus"
+        aria-label={t('close_focus_aria')}
       >
-        Tanca ✕
+        {t('close')} ✕
       </button>
 
       <div className="flex min-h-full flex-col items-center justify-center px-6 py-16 text-center animate-rise">
 
-      {/* Cercle que respira: ancora visual de calma + compte enrere si n'hi ha;
-          mentre no hi ha temps, tres punts que palpiten suaument (esperant…). */}
+      {/* Cercle que respira: compte enrere si n'hi ha; si no, tres punts que palpiten. */}
       <div className="mb-8 flex h-28 w-28 items-center justify-center rounded-full bg-sage-soft animate-breathe">
         {total > 0 ? (
           <span className="font-mono text-lg text-sage-deep">{fmt(remaining)}</span>
@@ -151,14 +140,12 @@ export function FocusMode({ task, onClose, onSteps, onToggleStep, onMinutes }: P
       </div>
 
       {loading ? (
-        <p className="text-lg text-muted">Pensant…</p>
+        <p className="text-lg text-muted">{t('thinking')}</p>
       ) : showStep ? (
         /* Un sol pas a la vegada: el teu únic objectiu ara */
         <>
           <p className="mb-3 max-w-xs truncate text-xs text-muted/70">{task.title}</p>
-          <p className="mb-2 text-sm uppercase tracking-widest text-muted">
-            El teu únic objectiu ara
-          </p>
+          <p className="mb-2 text-sm uppercase tracking-widest text-muted">{t('your_goal')}</p>
           <h1 className="mb-8 max-w-2xl text-3xl leading-snug font-medium text-ink sm:text-4xl">
             {steps[currentIndex]}
           </h1>
@@ -166,7 +153,7 @@ export function FocusMode({ task, onClose, onSteps, onToggleStep, onMinutes }: P
           {/* Progrés discret: punts, sense revelar la llista sencera */}
           <div
             className="mb-10 flex items-center gap-1.5"
-            aria-label={`Pas ${currentIndex + 1} de ${steps.length}`}
+            aria-label={t('step_of', { i: currentIndex + 1, n: steps.length })}
           >
             {steps.map((_, i) => (
               <span
@@ -186,24 +173,22 @@ export function FocusMode({ task, onClose, onSteps, onToggleStep, onMinutes }: P
             onClick={completeStep}
             className="rounded-full bg-sage px-10 py-4 text-lg font-medium text-white shadow-md transition hover:bg-sage-deep active:scale-95"
           >
-            {isLastPending ? 'Fet ✓' : 'Fet, següent →'}
+            {isLastPending ? t('done_check') : t('done_next')}
           </button>
         </>
       ) : phase === 'time' ? (
         /* Pantalla "Quant temps tens?": acota el primer pas */
         <>
           <p className="mb-3 max-w-xs truncate text-xs text-muted/70">{task.title}</p>
-          <h1 className="mb-8 text-2xl font-medium text-ink sm:text-3xl">
-            Quant temps tens ara?
-          </h1>
+          <h1 className="mb-8 text-2xl font-medium text-ink sm:text-3xl">{t('time_q')}</h1>
           <div className="flex w-full max-w-xs flex-col gap-2.5">
-            {TIMES.map((t) => (
+            {TIMES.map((m) => (
               <button
-                key={t.label}
-                onClick={() => startBreakdown(t.minutes)}
+                key={m}
+                onClick={() => startBreakdown(m)}
                 className="rounded-[var(--radius-soft)] border border-line bg-surface px-5 py-3.5 text-ink transition hover:border-sage hover:text-sage-deep"
               >
-                {t.label}
+                {timeLabel(m)}
               </button>
             ))}
           </div>
@@ -211,25 +196,25 @@ export function FocusMode({ task, onClose, onSteps, onToggleStep, onMinutes }: P
             onClick={() => setPhase('feeling')}
             className="mt-8 text-sm text-muted transition hover:text-ink"
           >
-            Enrere
+            {t('back')}
           </button>
         </>
       ) : (
         /* Pantalla "Com et sents?": context emocional per a la IA (entrada directa) */
         <>
           <p className="mb-3 max-w-xs truncate text-xs text-muted/70">{task.title}</p>
-          <h1 className="mb-8 text-2xl font-medium text-ink sm:text-3xl">Com et sents?</h1>
+          <h1 className="mb-8 text-2xl font-medium text-ink sm:text-3xl">{t('feeling_q')}</h1>
           <div className="flex w-full max-w-xs flex-col gap-2.5">
             {FEELINGS.map((f) => (
               <button
-                key={f.key}
+                key={f}
                 onClick={() => {
-                  setFeeling(f.key)
+                  setFeeling(f)
                   setPhase('time')
                 }}
                 className="rounded-[var(--radius-soft)] border border-line bg-surface px-5 py-3.5 text-ink transition hover:border-sage hover:text-sage-deep"
               >
-                {f.label}
+                {t(`feeling_${f}`)}
               </button>
             ))}
           </div>
@@ -237,7 +222,7 @@ export function FocusMode({ task, onClose, onSteps, onToggleStep, onMinutes }: P
             onClick={onClose}
             className="mt-8 text-sm text-muted transition hover:text-ink"
           >
-            Enrere
+            {t('back')}
           </button>
         </>
       )}
@@ -247,34 +232,30 @@ export function FocusMode({ task, onClose, onSteps, onToggleStep, onMinutes }: P
       {(timeUp || distracted) && (
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-paper/95 px-6 text-center animate-rise">
           {distracted ? (
-            <p className="max-w-sm text-xl leading-relaxed text-sage-deep">
-              Cap problema.
-              <br />
-              Tornem al punt on érem.
-            </p>
+            <p className="max-w-sm text-xl leading-relaxed text-sage-deep">{t('distracted_msg')}</p>
           ) : (
             <>
               <p className="mb-8 max-w-sm text-xl font-medium leading-snug text-ink">
-                S’ha acabat el temps que t’havies donat. Com ha anat?
+                {t('checkin_q')}
               </p>
               <div className="flex w-full max-w-xs flex-col gap-2.5">
                 <button
                   onClick={checkinDone}
                   className="rounded-full bg-sage px-8 py-3.5 font-medium text-white shadow-md transition hover:bg-sage-deep active:scale-95"
                 >
-                  Ho he fet ✓
+                  {t('checkin_done')}
                 </button>
                 <button
                   onClick={checkinMore}
                   className="rounded-[var(--radius-soft)] border border-line bg-surface px-5 py-3.5 text-ink transition hover:border-sage hover:text-sage-deep"
                 >
-                  Encara hi soc
+                  {t('checkin_more')}
                 </button>
                 <button
                   onClick={checkinDistracted}
                   className="rounded-[var(--radius-soft)] border border-line bg-surface px-5 py-3.5 text-ink transition hover:border-sage hover:text-sage-deep"
                 >
-                  M’he distret
+                  {t('checkin_distracted')}
                 </button>
               </div>
             </>
@@ -282,10 +263,10 @@ export function FocusMode({ task, onClose, onSteps, onToggleStep, onMinutes }: P
         </div>
       )}
 
-      {/* Microcelebració de l'arrencada: "Ja has començat." */}
+      {/* Microcelebració de l'arrencada */}
       {cheer && (
         <div className="absolute inset-0 z-30 flex items-center justify-center bg-paper/80 backdrop-blur-sm animate-rise">
-          <p className="text-2xl text-sage-deep">{cheer}</p>
+          <p className="text-2xl text-sage-deep">{t('cheer_started')}</p>
         </div>
       )}
     </div>

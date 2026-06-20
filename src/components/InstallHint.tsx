@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useI18n } from '../i18n'
 
 /**
  * Suggeriment discret per instal·lar la PWA. Filosofia onething: res de modals ni
@@ -25,6 +26,7 @@ function isStandalone(): boolean {
 const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
 
 export function InstallHint() {
+  const { t } = useI18n()
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null)
   const [dismissed, setDismissed] = useState(
     () => localStorage.getItem(DISMISS_KEY) === '1' || isStandalone(),
@@ -73,17 +75,14 @@ export function InstallHint() {
           onClick={install}
           className="rounded-full border border-line bg-surface px-3 py-1 transition hover:border-sage hover:text-sage-deep"
         >
-          Instal·la Onething
+          {t('install')}
         </button>
       ) : (
-        <span className="max-w-xs">
-          Per instal·lar-la: toca <span className="text-ink">Compartir</span> i «Afegeix a
-          la pantalla d’inici».
-        </span>
+        <span className="max-w-xs">{t('install_ios')}</span>
       )}
       <button
         onClick={dismiss}
-        aria-label="Descartar"
+        aria-label={t('dismiss')}
         className="shrink-0 transition hover:text-ink"
       >
         ✕

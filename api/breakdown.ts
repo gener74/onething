@@ -32,7 +32,8 @@ Regles:
 - Cada pas és UNA sola acció observable, en imperatiu, breu i clara.
 - Si la tasca és ambigua, fes una suposició raonable i sigues concret igualment.
 - To calmat i amable, mai imperatiu dur ni motivacional cridaner.
-- Sempre en català.
+- Respon SEMPRE en l'idioma que se't demani al final (l'exemple de sota és només per
+  il·lustrar el format i el nivell de concreció, no l'idioma).
 - No afegeixis introduccions, números ni explicacions: només els passos.
 
 Opcionalment rebràs context sobre com es sent l'usuari i quant temps té ara. Si hi és, fes-lo servir:
@@ -136,6 +137,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
   const feeling = typeof req.body?.feeling === 'string' ? req.body.feeling : ''
   const minutes = Number(req.body?.minutes)
+  const LANG_NAME: Record<string, string> = { en: 'English', ca: 'Catalan', es: 'Spanish' }
+  const lang = LANG_NAME[req.body?.lang as string] ?? 'English'
   const ctxParts: string[] = []
   if (FEELINGS[feeling]) ctxParts.push(`Com es sent ara: ${FEELINGS[feeling]}`)
   if (Number.isFinite(minutes) && minutes > 0) {
@@ -159,7 +162,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       messages: [
         {
           role: 'user',
-          content: `Parteix aquesta tasca en micro-passos: "${safeTitle}"${ctxLine}`,
+          content: `Parteix aquesta tasca en micro-passos: "${safeTitle}"${ctxLine}\n\nIdioma de la resposta: ${lang}. Escriu TOTS els passos en aquest idioma.`,
         },
       ],
     })

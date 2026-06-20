@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { Fragment, useMemo, useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import {
   db,
@@ -21,14 +21,12 @@ import { DoneList } from './components/DoneList'
 import { InstallHint } from './components/InstallHint'
 import { Leaves } from './components/Leaves'
 import { Mark } from './components/Mark'
+import { useI18n, LANGS } from './i18n'
 
-const BUCKETS: { key: Bucket; label: string }[] = [
-  { key: 'now', label: 'Ara' },
-  { key: 'next', label: 'Després' },
-  { key: 'someday', label: 'Algun dia' },
-]
+const BUCKETS: Bucket[] = ['now', 'next', 'someday']
 
 export default function App() {
+  const { t, tn } = useI18n()
   const [draft, setDraft] = useState('')
   const [focusId, setFocusId] = useState<number | null>(null)
   const [celebrate, setCelebrate] = useState(false)
@@ -108,13 +106,9 @@ export default function App() {
     if (!file) return
     try {
       const n = await importTasks(JSON.parse(await file.text()))
-      flashNotice(
-        n === 0
-          ? 'No hi havia tasques per importar.'
-          : `${n} ${n === 1 ? 'tasca importada' : 'tasques importades'}.`,
-      )
+      flashNotice(n === 0 ? t('import_none') : tn('import_done', n))
     } catch {
-      flashNotice('No s’ha pogut importar aquest fitxer.')
+      flashNotice(t('import_error'))
     }
   }
 
@@ -128,11 +122,11 @@ export default function App() {
         </div>
         <button
           onClick={() => setShowDone(true)}
-          title="Veure les tasques fetes"
+          title={t('view_done')}
           aria-label={
             completedToday
-              ? `${completedToday} ${completedToday === 1 ? 'feta' : 'fetes'} avui. Veure les fetes.`
-              : 'Veure les tasques fetes'
+              ? `${tn('done_today', completedToday)}. ${t('view_done')}`
+              : t('view_done')
           }
           className="flex items-center gap-1 rounded-full px-1 transition hover:opacity-70"
         >
@@ -144,10 +138,10 @@ export default function App() {
               {completedToday > 7 && (
                 <span className="ml-0.5 text-xs text-muted">+{completedToday - 7}</span>
               )}
-              <span className="ml-1.5 text-xs text-muted">avui</span>
+              <span className="ml-1.5 text-xs text-muted">{t('today_short')}</span>
             </>
           ) : (
-            <span className="text-sm text-muted">comencem</span>
+            <span className="text-sm text-muted">{t('lets_start')}</span>
           )}
         </button>
       </header>
@@ -157,17 +151,17 @@ export default function App() {
         <input
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          placeholder="Què tens al cap?…"
-          aria-label="Afegir una cosa"
+          placeholder={t('input_placeholder')}
+          aria-label={t('add_aria')}
           className="min-w-0 flex-1 rounded-[var(--radius-soft)] border border-line bg-surface px-4 py-3.5 text-ink placeholder:text-muted/70 focus:border-sage focus:outline-none"
         />
         <button
           type="submit"
           disabled={!draft.trim()}
-          aria-label="Afegir"
+          aria-label={t('add')}
           className="shrink-0 rounded-[var(--radius-soft)] bg-sage px-5 py-3.5 font-medium text-white transition hover:bg-sage-deep disabled:bg-sage-soft disabled:text-sage-deep/50"
         >
-          Afegir
+          {t('add')}
         </button>
       </form>
 
@@ -178,93 +172,89 @@ export default function App() {
           <div className="relative flex flex-col items-center gap-6 py-20 text-center animate-rise">
             <Mark className="h-20 w-20" breathe />
             <div className="space-y-2">
-              <p className="text-xl text-ink">Una cosa a la vegada.</p>
-              <p className="mx-auto max-w-xs text-base text-sage-deep">
-                No cal fer-ho tot. Només la següent cosa.
-              </p>
+              <p className="text-xl text-ink">{t('empty_title')}</p>
+              <p className="mx-auto max-w-xs text-base text-sage-deep">{t('empty_motto')}</p>
               <p className="mx-auto max-w-xs text-sm leading-relaxed text-muted">
-                Escriu què tens al cap aquí dalt. La resta pot esperar.
+                {t('empty_hint')}
               </p>
             </div>
           </div>
         </>
       ) : (
-      <div className="space-y-10">
-        {BUCKETS.map(({ key, label }) => (
-          <section key={key}>
-            <h2 className="mb-4 text-xs font-medium uppercase tracking-[0.18em] text-muted">
-              {label}
-            </h2>
-            {byBucket[key].length === 0 ? (
-              <p className="text-sm text-muted/60 italic">Res aquí.</p>
-            ) : (
-              <ul className="space-y-2">
-                {byBucket[key].map((t) => (
-                  <li
-                    key={t.id}
-                    className="group flex items-center gap-2 rounded-[var(--radius-soft)] border border-line bg-surface px-4 py-3 animate-rise"
-                  >
-                    <button
-                      onClick={() => markDone(t.id)}
-                      aria-label="Marcar com a feta"
-                      title="Marcar com a feta"
-                      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 text-xs transition ${
-                        completingId === t.id
-                          ? 'scale-110 border-sage bg-sage text-white'
-                          : 'border-sage/40 text-transparent hover:border-sage hover:text-sage/70'
-                      }`}
+        <div className="space-y-10">
+          {BUCKETS.map((key) => (
+            <section key={key}>
+              <h2 className="mb-4 text-xs font-medium uppercase tracking-[0.18em] text-muted">
+                {t(`bucket_${key}`)}
+              </h2>
+              {byBucket[key].length === 0 ? (
+                <p className="text-sm text-muted/60 italic">{t('nothing_here')}</p>
+              ) : (
+                <ul className="space-y-2">
+                  {byBucket[key].map((task) => (
+                    <li
+                      key={task.id}
+                      className="group flex items-center gap-2 rounded-[var(--radius-soft)] border border-line bg-surface px-4 py-3 animate-rise"
                     >
-                      ✓
-                    </button>
-                    <span className="flex-1 text-ink">{t.title}</span>
-
-                    {key === 'now' && (
                       <button
-                        onClick={() => setFocusId(t.id)}
-                        className="rounded-full bg-sage-soft px-3 py-1.5 text-sm text-sage-deep transition hover:bg-sage hover:text-white"
+                        onClick={() => markDone(task.id)}
+                        aria-label={t('mark_done')}
+                        title={t('mark_done')}
+                        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 text-xs transition ${
+                          completingId === task.id
+                            ? 'scale-110 border-sage bg-sage text-white'
+                            : 'border-sage/40 text-transparent hover:border-sage hover:text-sage/70'
+                        }`}
                       >
-                        Comença
+                        ✓
                       </button>
-                    )}
+                      <span className="flex-1 text-ink">{task.title}</span>
 
-                    <BucketMenu task={t} />
+                      {key === 'now' && (
+                        <button
+                          onClick={() => setFocusId(task.id)}
+                          className="rounded-full bg-sage-soft px-3 py-1.5 text-sm text-sage-deep transition hover:bg-sage hover:text-white"
+                        >
+                          {t('start')}
+                        </button>
+                      )}
 
-                    <button
-                      onClick={() => deleteTask(t.id)}
-                      aria-label="Esborrar"
-                      className="text-muted/40 transition hover:text-ink [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
-                    >
-                      ✕
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-        ))}
+                      <BucketMenu task={task} />
+
+                      <button
+                        onClick={() => deleteTask(task.id)}
+                        aria-label={t('delete')}
+                        className="text-muted/40 transition hover:text-ink [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
+                      >
+                        ✕
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          ))}
         </div>
       )}
 
-      {/* Portabilitat discreta: emporta't les teves dades */}
+      {/* Portabilitat discreta + idioma */}
       <footer className="mt-12 flex flex-col items-center gap-2 text-center">
-        <p className="max-w-xs text-xs text-muted/70">
-          Les teves dades viuen només en aquest dispositiu.
-        </p>
+        <p className="max-w-xs text-xs text-muted/70">{t('data_local')}</p>
         <div className="flex items-center gap-3 text-xs text-muted/70">
           <button
             onClick={handleExport}
-            title="Baixa un fitxer amb totes les teves tasques, per guardar-lo o passar-lo a un altre dispositiu"
+            title={t('save_copy_title')}
             className="transition hover:text-ink"
           >
-            Desa una còpia
+            {t('save_copy')}
           </button>
           <span aria-hidden>·</span>
           <button
             onClick={() => fileInputRef.current?.click()}
-            title="Recupera les tasques des d'un fitxer que havies desat"
+            title={t('recover_title')}
             className="transition hover:text-ink"
           >
-            Recupera
+            {t('recover')}
           </button>
           <input
             ref={fileInputRef}
@@ -276,6 +266,7 @@ export default function App() {
         </div>
         {notice && <p className="text-sm text-sage-deep">{notice}</p>}
         <InstallHint />
+        <LangSwitcher />
         <p className="mt-1 text-[11px] text-muted/50">Ward Technologies Inc.</p>
       </footer>
 
@@ -315,7 +306,7 @@ export default function App() {
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-paper/80 backdrop-blur-sm animate-rise">
           <div className="text-center">
             <div className="mb-3 text-5xl">🌿</div>
-            <p className="text-lg text-sage-deep">Una menys. Respira.</p>
+            <p className="text-lg text-sage-deep">{t('reward')}</p>
           </div>
         </div>
       )}
@@ -325,18 +316,42 @@ export default function App() {
 
 /** Botons discrets per moure una tasca entre calaixos. */
 function BucketMenu({ task }: { task: Task }) {
-  const targets = BUCKETS.filter((b) => b.key !== task.bucket)
+  const { t } = useI18n()
+  const targets = BUCKETS.filter((b) => b !== task.bucket)
   return (
     <div className="flex gap-1 transition [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100">
       {targets.map((b) => (
         <button
-          key={b.key}
-          onClick={() => moveTask(task.id, b.key)}
-          title={`Mou a ${b.label}`}
+          key={b}
+          onClick={() => moveTask(task.id, b)}
+          title={t('move_to', { label: t(`bucket_${b}`) })}
           className="rounded-full px-2 py-1 text-xs text-muted transition hover:bg-sage-soft hover:text-sage-deep"
         >
-          {b.label}
+          {t(`bucket_${b}`)}
         </button>
+      ))}
+    </div>
+  )
+}
+
+/** Selector d'idioma discret (EN · CA · ES). */
+function LangSwitcher() {
+  const { lang, setLang } = useI18n()
+  return (
+    <div className="flex items-center gap-1.5 text-[11px] text-muted/60">
+      {LANGS.map((l, i) => (
+        <Fragment key={l.code}>
+          {i > 0 && <span aria-hidden>·</span>}
+          <button
+            onClick={() => setLang(l.code)}
+            aria-pressed={lang === l.code}
+            className={`transition hover:text-ink ${
+              lang === l.code ? 'font-medium text-sage-deep' : ''
+            }`}
+          >
+            {l.label}
+          </button>
+        </Fragment>
       ))}
     </div>
   )
