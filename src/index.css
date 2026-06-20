@@ -105,3 +105,36 @@ body {
 .animate-pulse-soft {
   animation: pulse-soft 1.4s ease-in-out infinite;
 }
+
+/* Fons relaxant de l'estat buit: fulles de sàlvia que cauen lentes i deriven. */
+@keyframes leaf-fall {
+  0% {
+    transform: translate3d(0, -12vh, 0) rotate(0deg);
+    opacity: 0;
+  }
+  12%,
+  82% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate3d(var(--drift, 24px), 88vh, 0) rotate(200deg);
+    opacity: 0;
+  }
+}
+
+.leaf {
+  position: absolute;
+  top: 0;
+  border-radius: 0 100% 0 100%; /* forma de fulla/pètal */
+  background: var(--color-sage);
+  opacity: 0;
+  pointer-events: none;
+  animation: leaf-fall linear infinite;
+}
+
+/* Calma i accessibilitat: cap fulla si l'usuari prefereix menys moviment. */
+@media (prefers-reduced-motion: reduce) {
+  .leaf {
+    display: none;
+  }
+}

@@ -19,6 +19,7 @@ import {
 import { FocusMode } from './components/FocusMode'
 import { DoneList } from './components/DoneList'
 import { InstallHint } from './components/InstallHint'
+import { Leaves } from './components/Leaves'
 import { Mark } from './components/Mark'
 
 const BUCKETS: { key: Bucket; label: string }[] = [
@@ -172,15 +173,21 @@ export default function App() {
 
       {/* Estat buit: benvinguda calmada en lloc de tres calaixos buits */}
       {!loaded ? null : isEmpty ? (
-        <div className="flex flex-col items-center gap-6 py-16 text-center animate-rise">
-          <Mark className="h-20 w-20" breathe />
-          <div className="space-y-1.5">
-            <p className="text-lg text-ink">Una cosa a la vegada.</p>
-            <p className="mx-auto max-w-xs text-sm leading-relaxed text-muted">
-              Escriu què tens al cap aquí dalt i afegeix-ho. La resta pot esperar.
-            </p>
+        <>
+          <Leaves />
+          <div className="relative flex flex-col items-center gap-6 py-20 text-center animate-rise">
+            <Mark className="h-20 w-20" breathe />
+            <div className="space-y-2">
+              <p className="text-xl text-ink">Una cosa a la vegada.</p>
+              <p className="mx-auto max-w-xs text-base text-sage-deep">
+                No cal fer-ho tot. Només la següent cosa.
+              </p>
+              <p className="mx-auto max-w-xs text-sm leading-relaxed text-muted">
+                Escriu què tens al cap aquí dalt. La resta pot esperar.
+              </p>
+            </div>
           </div>
-        </div>
+        </>
       ) : (
       <div className="space-y-10">
         {BUCKETS.map(({ key, label }) => (
