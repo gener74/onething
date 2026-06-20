@@ -94,7 +94,7 @@ const DICT: Record<Lang, Dict> = {
     close_aria: 'Close',
     day_today: 'Today',
     day_yesterday: 'Yesterday',
-    install: 'Install Onething',
+    install: 'Install OneThing',
     install_ios: 'To install it: tap Share and “Add to Home Screen”.',
     dismiss: 'Dismiss',
     edit: 'Edit',
@@ -113,6 +113,7 @@ const DICT: Record<Lang, Dict> = {
     ai_limit_reached: 'You’ve used today’s AI help. Here’s a basic first step — it’s back tomorrow.',
     ai_remaining_one: '{n} AI breakdown left today',
     ai_remaining_other: '{n} AI breakdowns left today',
+    privacy: 'Privacy',
   },
   ca: {
     bucket_now: 'Ara',
@@ -179,7 +180,7 @@ const DICT: Record<Lang, Dict> = {
     close_aria: 'Tancar',
     day_today: 'Avui',
     day_yesterday: 'Ahir',
-    install: 'Instal·la Onething',
+    install: 'Instal·la OneThing',
     install_ios: 'Per instal·lar-la: toca Compartir i «Afegeix a la pantalla d’inici».',
     dismiss: 'Descartar',
     edit: 'Edita',
@@ -198,6 +199,7 @@ const DICT: Record<Lang, Dict> = {
     ai_limit_reached: 'Avui ja has fet servir l’ajuda de la IA. Aquí tens un primer pas bàsic; demà torna.',
     ai_remaining_one: 'Et queda {n} desglossament d’IA avui',
     ai_remaining_other: 'Et queden {n} desglossaments d’IA avui',
+    privacy: 'Privacitat',
   },
   es: {
     bucket_now: 'Ahora',
@@ -264,7 +266,7 @@ const DICT: Record<Lang, Dict> = {
     close_aria: 'Cerrar',
     day_today: 'Hoy',
     day_yesterday: 'Ayer',
-    install: 'Instala Onething',
+    install: 'Instala OneThing',
     install_ios: 'Para instalarla: toca Compartir y «Añadir a pantalla de inicio».',
     dismiss: 'Descartar',
     edit: 'Editar',
@@ -283,6 +285,7 @@ const DICT: Record<Lang, Dict> = {
     ai_limit_reached: 'Hoy ya has usado la ayuda de la IA. Aquí tienes un primer paso básico; mañana vuelve.',
     ai_remaining_one: 'Te queda {n} desglose de IA hoy',
     ai_remaining_other: 'Te quedan {n} desgloses de IA hoy',
+    privacy: 'Privacidad',
   },
 }
 

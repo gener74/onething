@@ -41,7 +41,7 @@ export function Gate({ children }: { children: React.ReactNode }) {
   return (
     <div className="mx-auto flex min-h-full max-w-sm flex-col items-center justify-center px-6 text-center animate-rise">
       <Mark className="mb-8 h-20 w-20" breathe />
-      <h1 className="mb-1 text-2xl font-medium tracking-tight text-ink">Onething</h1>
+      <h1 className="mb-1 text-2xl font-medium tracking-tight text-ink">OneThing</h1>
       <p className="mb-8 text-sm text-muted">{t('gate_private')}</p>
 
       <form onSubmit={submit} className="w-full">

@@ -20,6 +20,7 @@ import {
 } from './db'
 import { FocusMode } from './components/FocusMode'
 import { DoneList } from './components/DoneList'
+import { Privacy } from './components/Privacy'
 import { InstallHint } from './components/InstallHint'
 import { Leaves } from './components/Leaves'
 import { Mark } from './components/Mark'
@@ -36,6 +37,7 @@ export default function App() {
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editDraft, setEditDraft] = useState('')
   const [showDone, setShowDone] = useState(false)
+  const [showPrivacy, setShowPrivacy] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -139,7 +141,7 @@ export default function App() {
       <header className="flex items-center justify-between pt-10 pb-6">
         <div className="flex items-center gap-2.5">
           <Mark className="h-7 w-7" breathe />
-          <h1 className="text-2xl font-medium tracking-tight text-ink">Onething</h1>
+          <h1 className="text-2xl font-medium tracking-tight text-ink">OneThing</h1>
         </div>
         <button
           onClick={() => setShowDone(true)}
@@ -326,7 +328,13 @@ export default function App() {
           <LangSwitcher />
           <ThemeToggle />
         </div>
-        <p className="mt-1 text-[11px] text-muted/50">Ward Technologies Inc.</p>
+        <button
+          onClick={() => setShowPrivacy(true)}
+          className="text-[11px] text-muted/60 transition hover:text-ink"
+        >
+          {t('privacy')}
+        </button>
+        <p className="text-[11px] text-muted/50">Ward Technologies Inc.</p>
       </footer>
 
       {/* Mode focus */}
@@ -351,6 +359,9 @@ export default function App() {
           onClearAll={() => clearDone()}
         />
       )}
+
+      {/* Nota de privacitat */}
+      {showPrivacy && <Privacy onClose={() => setShowPrivacy(false)} />}
 
       {/* Recompensa */}
       {celebrate && (

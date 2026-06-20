@@ -302,7 +302,21 @@ export function FocusMode({
       {(timeUp || distracted) && (
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-paper/95 px-6 text-center animate-rise">
           {distracted ? (
-            <p className="max-w-sm text-xl leading-relaxed text-sage-deep">{t('distracted_msg')}</p>
+            <>
+              <p className="mb-6 max-w-sm text-lg leading-relaxed text-sage-deep">
+                {t('distracted_msg')}
+              </p>
+              {currentIndex !== -1 && (
+                <>
+                  <p className="mb-2 text-sm uppercase tracking-widest text-muted">
+                    {t('your_goal')}
+                  </p>
+                  <p className="max-w-md text-xl font-medium leading-snug text-ink">
+                    {steps[currentIndex]}
+                  </p>
+                </>
+              )}
+            </>
           ) : (
             <>
               <p className="mb-8 max-w-sm text-xl font-medium leading-snug text-ink">
