@@ -12,9 +12,10 @@ export default defineConfig({
       registerType: 'autoUpdate',
       pwaAssets: { config: true },
       manifest: {
-        name: 'onething — una cosa a la vegada',
-        short_name: 'onething',
+        name: 'Onething — una cosa a la vegada',
+        short_name: 'Onething',
         description: 'Una eina de focus calmada. Una sola cosa, ara.',
+        lang: 'ca',
         theme_color: '#6b8f71',
         background_color: '#fbfaf7',
         display: 'standalone',

@@ -102,7 +102,7 @@ export default function App() {
       <header className="flex items-center justify-between pt-10 pb-6">
         <div className="flex items-center gap-2.5">
           <Mark className="h-7 w-7" breathe />
-          <h1 className="text-2xl font-medium tracking-tight text-ink">onething</h1>
+          <h1 className="text-2xl font-medium tracking-tight text-ink">Onething</h1>
         </div>
         {completedToday ? (
           <span

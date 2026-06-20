@@ -157,7 +157,7 @@ export async function importTasks(data: unknown): Promise<number> {
   const file = data as { app?: string; tasks?: unknown } | null
   // Acceptem 'una' (marca antiga) a més de 'onething' per no trencar fitxers ja exportats.
   if (!file || (file.app !== 'onething' && file.app !== 'una') || !Array.isArray(file.tasks)) {
-    throw new Error('Això no sembla un fitxer d’onething.')
+    throw new Error('Això no sembla un fitxer d’Onething.')
   }
   const clean = file.tasks
     .map(sanitizeTask)
