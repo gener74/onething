@@ -66,6 +66,13 @@ export function moveTask(id: number, bucket: Bucket) {
   return db.tasks.update(id, { bucket })
 }
 
+/** Edita el títol d'una tasca (ignora el text buit). */
+export function renameTask(id: number, title: string) {
+  const clean = title.trim()
+  if (!clean) return
+  return db.tasks.update(id, { title: clean })
+}
+
 export function setSteps(id: number, steps: string[]) {
   // Passos nous → reinicia els marcats (els índexs antics ja no hi corresponen).
   return db.tasks.update(id, { steps, doneSteps: [] })
@@ -99,6 +106,11 @@ export function reopenTask(id: number) {
 
 export function deleteTask(id: number) {
   return db.tasks.delete(id)
+}
+
+/** Buida tot l'historial de tasques fetes. */
+export function clearDone() {
+  return db.tasks.where('done').equals(1).delete()
 }
 
 /** Quantes tasques he completat avui (per a la recompensa/ratxa). */

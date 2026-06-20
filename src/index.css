@@ -16,6 +16,20 @@
   --radius-soft: 14px;
 }
 
+/* Tema fosc: mateixa ànima sàlvia, sobre un paper càlid fosc. Sobreescrivim els
+   tokens de color i totes les utilitats (bg-paper, text-ink…) s'hi adapten soles. */
+html.dark {
+  --color-paper: #1a1b16;
+  --color-surface: #232420;
+  --color-ink: #e9e8e2;
+  --color-muted: #9a9a90;
+  --color-line: #34362d;
+  --color-sage: #8fae93;
+  --color-sage-soft: #2b322c;
+  --color-sage-deep: #b6d0b9;
+  color-scheme: dark;
+}
+
 * {
   box-sizing: border-box;
 }

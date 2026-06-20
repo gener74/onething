@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { Task } from '../db'
 import { useI18n, type Lang } from '../i18n'
 
@@ -5,6 +6,8 @@ interface Props {
   tasks: Task[]
   onClose: () => void
   onReopen: (id: number) => void
+  onDelete: (id: number) => void
+  onClearAll: () => void
 }
 
 /** Etiqueta de dia humana: Avui / Ahir / data llarga (en l'idioma actiu). */
@@ -23,8 +26,9 @@ function timeLabel(ts: number | undefined, lang: Lang): string {
   return new Date(ts).toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' })
 }
 
-export function DoneList({ tasks, onClose, onReopen }: Props) {
+export function DoneList({ tasks, onClose, onReopen, onDelete, onClearAll }: Props) {
   const { t, lang } = useI18n()
+  const [confirming, setConfirming] = useState(false)
 
   // Agrupar per dia. Les tasques arriben de més recent a més antiga.
   const groups: { label: string; items: Task[] }[] = []
@@ -52,38 +56,81 @@ export function DoneList({ tasks, onClose, onReopen }: Props) {
         {tasks.length === 0 ? (
           <p className="py-16 text-center text-sm italic text-muted/70">{t('done_empty')}</p>
         ) : (
-          <div className="space-y-8">
-            {groups.map((g) => (
-              <section key={g.label}>
-                <h2 className="mb-3 text-xs font-medium uppercase tracking-[0.18em] text-muted">
-                  {g.label}
-                </h2>
-                <ul className="space-y-2">
-                  {g.items.map((task) => (
-                    <li
-                      key={task.id}
-                      className="group flex items-center gap-3 rounded-[var(--radius-soft)] border border-line bg-surface px-4 py-3"
-                    >
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sage text-xs text-white">
-                        ✓
-                      </span>
-                      <span className="flex-1 text-muted line-through">{task.title}</span>
-                      <span className="text-xs text-muted/60">
-                        {timeLabel(task.completedAt, lang)}
-                      </span>
-                      <button
-                        onClick={() => onReopen(task.id)}
-                        title={t('undo_title')}
-                        className="text-xs text-muted transition hover:text-sage-deep [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
+          <>
+            <div className="space-y-8">
+              {groups.map((g) => (
+                <section key={g.label}>
+                  <h2 className="mb-3 text-xs font-medium uppercase tracking-[0.18em] text-muted">
+                    {g.label}
+                  </h2>
+                  <ul className="space-y-2">
+                    {g.items.map((task) => (
+                      <li
+                        key={task.id}
+                        className="group flex items-center gap-3 rounded-[var(--radius-soft)] border border-line bg-surface px-4 py-3"
                       >
-                        {t('undo')}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            ))}
-          </div>
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sage text-xs text-white">
+                          ✓
+                        </span>
+                        <span className="flex-1 text-muted line-through">{task.title}</span>
+                        <span className="text-xs text-muted/60">
+                          {timeLabel(task.completedAt, lang)}
+                        </span>
+                        <button
+                          onClick={() => onReopen(task.id)}
+                          title={t('undo_title')}
+                          className="text-xs text-muted transition hover:text-sage-deep"
+                        >
+                          {t('undo')}
+                        </button>
+                        <button
+                          onClick={() => onDelete(task.id)}
+                          aria-label={t('delete')}
+                          title={t('delete')}
+                          className="text-muted/50 transition hover:text-ink"
+                        >
+                          ✕
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              ))}
+            </div>
+
+            {/* Buidar tot l'historial, amb confirmació de dos tocs (acció irreversible) */}
+            <div className="mt-10 text-center">
+              {confirming ? (
+                <div className="flex flex-col items-center gap-2">
+                  <p className="text-xs text-muted">{t('clear_all_confirm')}</p>
+                  <div className="flex items-center gap-3 text-xs">
+                    <button
+                      onClick={() => {
+                        onClearAll()
+                        setConfirming(false)
+                      }}
+                      className="text-ink underline transition hover:text-sage-deep"
+                    >
+                      {t('confirm_yes')}
+                    </button>
+                    <button
+                      onClick={() => setConfirming(false)}
+                      className="text-muted transition hover:text-ink"
+                    >
+                      {t('cancel')}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setConfirming(true)}
+                  className="text-xs text-muted/60 transition hover:text-ink"
+                >
+                  {t('clear_all')}
+                </button>
+              )}
+            </div>
+          </>
         )}
       </div>
     </div>

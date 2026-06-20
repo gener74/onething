@@ -67,6 +67,7 @@ export function FocusMode({ task, onClose, onSteps, onToggleStep, onMinutes }: P
 
   function completeStep() {
     const wasFirst = doneSteps.size === 0
+    navigator.vibrate?.(10) // toc hàptic suau (si el navegador ho suporta)
     onToggleStep(currentIndex)
     // Celebrar l'arrencada: el primer pas és el més difícil per a un cervell TDAH.
     if (wasFirst && !isLastPending) {
@@ -90,6 +91,16 @@ export function FocusMode({ task, onClose, onSteps, onToggleStep, onMinutes }: P
       setDistracted(false)
       setElapsed(0)
     }, 1800)
+  }
+
+  // Tornar a generar el desglossament: neteja els passos i el temps, i torna a
+  // la pantalla "Com et sents?" per demanar-ne uns altres.
+  function regenerate() {
+    onSteps([])
+    onMinutes(0)
+    setElapsed(0)
+    setFeeling(null)
+    setPhase('feeling')
   }
 
   async function startBreakdown(minutes: number) {
@@ -174,6 +185,13 @@ export function FocusMode({ task, onClose, onSteps, onToggleStep, onMinutes }: P
             className="rounded-full bg-sage px-10 py-4 text-lg font-medium text-white shadow-md transition hover:bg-sage-deep active:scale-95"
           >
             {isLastPending ? t('done_check') : t('done_next')}
+          </button>
+
+          <button
+            onClick={regenerate}
+            className="mt-6 text-sm text-muted transition hover:text-ink"
+          >
+            {t('regen')}
           </button>
         </>
       ) : phase === 'time' ? (

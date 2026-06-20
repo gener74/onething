@@ -4,9 +4,11 @@ import {
   db,
   addTask,
   moveTask,
+  renameTask,
   completeTask,
   reopenTask,
   deleteTask,
+  clearDone,
   setSteps,
   setFocusMinutes,
   toggleStep,
@@ -31,6 +33,8 @@ export default function App() {
   const [focusId, setFocusId] = useState<number | null>(null)
   const [celebrate, setCelebrate] = useState(false)
   const [completingId, setCompletingId] = useState<number | null>(null)
+  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editDraft, setEditDraft] = useState('')
   const [showDone, setShowDone] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -67,9 +71,26 @@ export default function App() {
 
   async function handleComplete(id: number) {
     await completeTask(id)
+    navigator.vibrate?.(15) // toc hàptic suau al mòbil (si el navegador ho suporta)
     setFocusId(null)
     setCelebrate(true)
     setTimeout(() => setCelebrate(false), 1600)
+  }
+
+  // Treu la paràlisi de decisió: tria una tasca de "Ara" a l'atzar i entra-hi.
+  function decideForMe() {
+    const now = byBucket.now
+    if (now.length === 0) return
+    setFocusId(now[Math.floor(Math.random() * now.length)].id)
+  }
+
+  function startEdit(task: Task) {
+    setEditingId(task.id)
+    setEditDraft(task.title)
+  }
+  function saveEdit() {
+    if (editingId !== null) renameTask(editingId, editDraft)
+    setEditingId(null)
   }
 
   // Marcar feta des de la llista: omple el cercle un instant (feedback clar, també
@@ -184,9 +205,19 @@ export default function App() {
         <div className="space-y-10">
           {BUCKETS.map((key) => (
             <section key={key}>
-              <h2 className="mb-4 text-xs font-medium uppercase tracking-[0.18em] text-muted">
-                {t(`bucket_${key}`)}
-              </h2>
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-xs font-medium uppercase tracking-[0.18em] text-muted">
+                  {t(`bucket_${key}`)}
+                </h2>
+                {key === 'now' && byBucket.now.length >= 2 && (
+                  <button
+                    onClick={decideForMe}
+                    className="text-xs text-muted transition hover:text-sage-deep"
+                  >
+                    🎲 {t('decide')}
+                  </button>
+                )}
+              </div>
               {byBucket[key].length === 0 ? (
                 <p className="text-sm text-muted/60 italic">{t('nothing_here')}</p>
               ) : (
@@ -208,7 +239,31 @@ export default function App() {
                       >
                         ✓
                       </button>
-                      <span className="flex-1 text-ink">{task.title}</span>
+                      {editingId === task.id ? (
+                        <input
+                          value={editDraft}
+                          onChange={(e) => setEditDraft(e.target.value)}
+                          onBlur={saveEdit}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault()
+                              saveEdit()
+                            } else if (e.key === 'Escape') {
+                              setEditingId(null)
+                            }
+                          }}
+                          autoFocus
+                          className="min-w-0 flex-1 rounded-[var(--radius-soft)] border border-sage bg-surface px-2 py-1 text-ink focus:outline-none"
+                        />
+                      ) : (
+                        <button
+                          onClick={() => startEdit(task)}
+                          title={t('edit')}
+                          className="min-w-0 flex-1 truncate text-left text-ink"
+                        >
+                          {task.title}
+                        </button>
+                      )}
 
                       {key === 'now' && (
                         <button
@@ -224,7 +279,8 @@ export default function App() {
                       <button
                         onClick={() => deleteTask(task.id)}
                         aria-label={t('delete')}
-                        className="text-muted/40 transition hover:text-ink [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
+                        title={t('delete')}
+                        className="text-muted/50 transition hover:text-ink"
                       >
                         ✕
                       </button>
@@ -266,7 +322,10 @@ export default function App() {
         </div>
         {notice && <p className="text-sm text-sage-deep">{notice}</p>}
         <InstallHint />
-        <LangSwitcher />
+        <div className="flex items-center gap-4">
+          <LangSwitcher />
+          <ThemeToggle />
+        </div>
         <p className="mt-1 text-[11px] text-muted/50">Ward Technologies Inc.</p>
       </footer>
 
@@ -298,6 +357,8 @@ export default function App() {
           tasks={doneTasks ?? []}
           onClose={() => setShowDone(false)}
           onReopen={(id) => reopenTask(id)}
+          onDelete={(id) => deleteTask(id)}
+          onClearAll={() => clearDone()}
         />
       )}
 
@@ -330,6 +391,42 @@ function BucketMenu({ task }: { task: Task }) {
           {t(`bucket_${b}`)}
         </button>
       ))}
+    </div>
+  )
+}
+
+/** Selector de tema discret (☀️ clar · 🌙 fosc), amb l'actiu ressaltat. */
+function ThemeToggle() {
+  const { t } = useI18n()
+  const [dark, setDark] = useState(() =>
+    document.documentElement.classList.contains('dark'),
+  )
+  function set(next: boolean) {
+    setDark(next)
+    document.documentElement.classList.toggle('dark', next)
+    localStorage.setItem('onething-theme', next ? 'dark' : 'light')
+  }
+  return (
+    <div className="flex items-center gap-1.5 text-[11px]" aria-label={t('theme_toggle')}>
+      <button
+        onClick={() => set(false)}
+        aria-pressed={!dark}
+        title={t('theme_light')}
+        className={`leading-none transition hover:opacity-100 ${dark ? 'opacity-40' : 'opacity-100'}`}
+      >
+        ☀️
+      </button>
+      <span aria-hidden className="text-muted/40">
+        ·
+      </span>
+      <button
+        onClick={() => set(true)}
+        aria-pressed={dark}
+        title={t('theme_dark')}
+        className={`leading-none transition hover:opacity-100 ${dark ? 'opacity-100' : 'opacity-40'}`}
+      >
+        🌙
+      </button>
     </div>
   )
 }
