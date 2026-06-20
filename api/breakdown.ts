@@ -2,20 +2,29 @@
  * Funció serverless: /api/breakdown
  *
  * Aquí és on vive la killer feature de debò ("No sé per on començar").
- * El client (src/ai.ts) crida aquest endpoint amb { title }; nosaltres demanem
- * a Claude que parteixi la tasca en micro-passos i tornem { steps: string[] }.
+ * El client (src/ai.ts) crida aquest endpoint amb { title, feeling, minutes, lang,
+ * device }; demanem a Claude que parteixi la tasca en micro-passos i tornem
+ * { steps: string[] }.
  *
  * La clau d'API NO surt mai d'aquí: viu a la variable d'entorn ANTHROPIC_API_KEY
- * del servidor (Vercel), no al bundle del navegador. Això manté la promesa
- * local-first: cap dada de l'usuari es desa enlloc; només passa per Claude i torna.
+ * del servidor (Vercel), no al bundle del navegador. Cap dada de l'usuari es desa;
+ * només passa per Claude i torna.
  *
- * Si aquesta funció falla o no està desplegada, src/ai.ts cau al fallback
- * heurístic local, així que la UX no es trenca mai.
+ * Cost i abús: limitem amb un magatzem compartit (Upstash Redis) — una ració diària
+ * per dispositiu (el "pla gratuït") + tallaffocs per IP. Si Upstash no està
+ * configurat (p. ex. en local), les limitacions es desactiven i el sostre de
+ * despesa d'Anthropic segueix sent el límit dur. Si la funció falla o bloqueja,
+ * src/ai.ts cau al fallback heurístic local, així que la UX no es trenca mai.
  */
 import Anthropic from '@anthropic-ai/sdk'
 import type { VercelRequest, VercelResponse } from '@vercel/node'
+import { Redis } from '@upstash/redis'
 
 const client = new Anthropic() // llegeix ANTHROPIC_API_KEY de l'entorn
+
+// Haiku 4.5: ~3-4× més econòmic que Sonnet i prou per a una tasca tan acotada
+// (partir en 3-5 passos). NOTA: Haiku NO admet el paràmetre `effort` (donaria 400).
+const MODEL = 'claude-haiku-4-5'
 
 const SYSTEM = `Ets un ajudant per a cervells amb TDAH dins d'una eina de focus calmada.
 L'usuari et dóna una tasca que el paralitza. Parteix-la en passos petits i CONCRETS
@@ -66,12 +75,38 @@ const SCHEMA = {
   additionalProperties: false,
 } as const
 
-// --- Protecció bàsica de l'endpoint ---
+// --- Límits de cost i abús ---
+
+const DAILY_PER_DEVICE = 10 // ració gratuïta diària per dispositiu (el "pla gratuït")
+const DAILY_PER_IP = 60 // tallaffoc anti-abús per IP (cobreix IPs compartides)
+const BURST_PER_IP = 20 // ràfega per minut per IP (atura bots)
+const DAY_TTL = 90_000 // ~25 h, perquè les claus diàries es netegin soles
+
+// Magatzem compartit per comptar. Si no està configurat → fail-open (no limitem).
+let redis: Redis | null = null
+try {
+  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    redis = Redis.fromEnv()
+  }
+} catch {
+  redis = null
+}
+
+/** Incrementa un comptador amb caducitat i diu si s'ha superat el límit. */
+async function overLimit(key: string, limit: number, ttlSeconds: number): Promise<boolean> {
+  if (!redis) return false // sense magatzem → no limitem
+  try {
+    const n = await redis.incr(key)
+    if (n === 1) await redis.expire(key, ttlSeconds)
+    return n > limit
+  } catch {
+    return false // si Redis falla, no bloquegem (el spend cap protegeix el cost)
+  }
+}
 
 /**
- * Mateix origen: només acceptem peticions del domini que serveix l'app (mateix
- * host). Atura altres webs i `curl` sense capçalera. NOTA: la capçalera `Origin`
- * es pot falsejar des d'un client no-navegador → és un dissuasiu, no una barrera.
+ * Mateix origen: només acceptem peticions del domini que serveix l'app. Atura
+ * altres webs i `curl` sense capçalera (dissuasiu, no barrera: `Origin` es pot falsejar).
  */
 function sameOrigin(req: VercelRequest): boolean {
   const origin = req.headers.origin
@@ -83,28 +118,10 @@ function sameOrigin(req: VercelRequest): boolean {
   }
 }
 
-/**
- * Rate limit per IP en memòria: best-effort. En serverless cada instància té la
- * seva pròpia memòria i es reinicia en arrencades fredes, així que atura ràfegues
- * contra una mateixa instància, NO un atac distribuït. Per a protecció robusta
- * caldria un magatzem compartit (Vercel KV / Upstash Redis).
- */
-const WINDOW_MS = 60_000
-const MAX_PER_WINDOW = 20
-const hits = new Map<string, number[]>()
-
 function clientIp(req: VercelRequest): string {
   const xff = req.headers['x-forwarded-for']
   const raw = Array.isArray(xff) ? xff[0] : xff
   return raw?.split(',')[0].trim() || req.socket?.remoteAddress || 'unknown'
-}
-
-function rateLimited(ip: string): boolean {
-  const now = Date.now()
-  const recent = (hits.get(ip) ?? []).filter((t) => now - t < WINDOW_MS)
-  recent.push(now)
-  hits.set(ip, recent)
-  return recent.length > MAX_PER_WINDOW
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -117,16 +134,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(403).json({ error: 'forbidden_origin' })
   }
 
-  if (rateLimited(clientIp(req))) {
-    return res.status(429).json({ error: 'rate_limited' })
-  }
-
   const title = typeof req.body?.title === 'string' ? req.body.title.trim() : ''
   if (!title) {
     return res.status(400).json({ error: 'title_required' })
   }
   // Tallem entrades absurdament llargues: és un títol de tasca, no un assaig.
   const safeTitle = title.slice(0, 500)
+
+  // Límits: ràfega per IP → sostre diari per IP → ració diària per dispositiu.
+  const ip = clientIp(req)
+  const device = typeof req.body?.device === 'string' ? req.body.device.slice(0, 64) : ''
+  const today = new Date().toISOString().slice(0, 10)
+
+  if (await overLimit(`rl:burst:${ip}`, BURST_PER_IP, 60)) {
+    return res.status(429).json({ error: 'rate_limited' })
+  }
+  if (await overLimit(`rl:ip:${ip}:${today}`, DAILY_PER_IP, DAY_TTL)) {
+    return res.status(429).json({ error: 'rate_limited' })
+  }
+  if (device && (await overLimit(`q:dev:${device}:${today}`, DAILY_PER_DEVICE, DAY_TTL))) {
+    return res.status(429).json({ error: 'quota_exceeded' })
+  }
 
   // Context opcional (com es sent + quant temps) per afinar el desglossament.
   const FEELINGS: Record<string, string> = {
@@ -150,13 +178,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const message = await client.messages.create({
-      model: 'claude-sonnet-4-6',
+      model: MODEL,
       max_tokens: 1024,
       system: SYSTEM,
-      // effort mitjà: partir bé una tasca real demana pensar una mica; 'low' donava
-      // passos massa plans. Sonnet a 'medium' segueix sent ràpid i econòmic.
       output_config: {
-        effort: 'medium',
         format: { type: 'json_schema', schema: SCHEMA },
       },
       messages: [
@@ -166,6 +191,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         },
       ],
     })
+
+    // Registre del cost real (tokens) per poder ajustar quotes/model amb dades.
+    console.log('breakdown', { model: MODEL, usage: message.usage })
 
     if (message.stop_reason === 'refusal') {
       // Cas rar: classificadors de seguretat. Deixem que el client caigui al fallback.

@@ -25,6 +25,20 @@ export interface BreakdownContext {
   lang?: 'en' | 'ca' | 'es'
 }
 
+/**
+ * Id anònim i estable d'aquest dispositiu (no és un compte ni cap dada personal):
+ * només serveix perquè el servidor compti la ració diària gratuïta per dispositiu.
+ */
+function deviceId(): string {
+  const KEY = 'onething-device'
+  let id = localStorage.getItem(KEY)
+  if (!id) {
+    id = crypto.randomUUID()
+    localStorage.setItem(KEY, id)
+  }
+  return id
+}
+
 export async function breakdownTask(
   title: string,
   ctx: BreakdownContext = {},
@@ -38,6 +52,7 @@ export async function breakdownTask(
         feeling: ctx.feeling,
         minutes: ctx.minutes,
         lang: ctx.lang,
+        device: deviceId(),
       }),
     })
     if (res.ok) {
