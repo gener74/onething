@@ -122,15 +122,23 @@ export default function App() {
         )}
       </header>
 
-      {/* Brain dump: sense fricció, un sol camp */}
-      <form onSubmit={handleAdd} className="mb-8">
+      {/* Brain dump: sense fricció, un sol camp + botó (Enter també funciona) */}
+      <form onSubmit={handleAdd} className="mb-8 flex items-center gap-2">
         <input
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          placeholder="Què tens al cap? Escriu-ho i prem Enter…"
+          placeholder="Què tens al cap?…"
           aria-label="Afegir una cosa"
-          className="w-full rounded-[var(--radius-soft)] border border-line bg-surface px-4 py-3.5 text-ink placeholder:text-muted/70 focus:border-sage focus:outline-none"
+          className="min-w-0 flex-1 rounded-[var(--radius-soft)] border border-line bg-surface px-4 py-3.5 text-ink placeholder:text-muted/70 focus:border-sage focus:outline-none"
         />
+        <button
+          type="submit"
+          disabled={!draft.trim()}
+          aria-label="Afegir"
+          className="shrink-0 rounded-[var(--radius-soft)] bg-sage px-5 py-3.5 font-medium text-white transition hover:bg-sage-deep disabled:bg-sage-soft disabled:text-sage-deep/50"
+        >
+          Afegir
+        </button>
       </form>
 
       {/* Estat buit: benvinguda calmada en lloc de tres calaixos buits */}
@@ -140,7 +148,7 @@ export default function App() {
           <div className="space-y-1.5">
             <p className="text-lg text-ink">Una cosa a la vegada.</p>
             <p className="mx-auto max-w-xs text-sm leading-relaxed text-muted">
-              Escriu què tens al cap aquí dalt i prem Enter. La resta pot esperar.
+              Escriu què tens al cap aquí dalt i afegeix-ho. La resta pot esperar.
             </p>
           </div>
         </div>
@@ -211,6 +219,7 @@ export default function App() {
           />
         </div>
         {notice && <p className="text-sm text-sage-deep">{notice}</p>}
+        <p className="mt-1 text-[11px] text-muted/50">Ward Technologies Inc.</p>
       </footer>
 
       {/* Mode focus */}
