@@ -82,14 +82,18 @@ const DAILY_PER_IP = 60 // tallaffoc anti-abús per IP (cobreix IPs compartides)
 const BURST_PER_IP = 20 // ràfega per minut per IP (atura bots)
 const DAY_TTL = 90_000 // ~25 h, perquè les claus diàries es netegin soles
 
-// Magatzem compartit per comptar. Si no està configurat → fail-open (no limitem).
+// Magatzem compartit per comptar. La integració d'Upstash a Vercel injecta les
+// credencials amb prefix KV_*; acceptem també els noms UPSTASH_* per compatibilitat.
+// Si no n'hi ha cap → fail-open (no limitem).
+const redisUrl = process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL
+const redisToken = process.env.KV_REST_API_TOKEN ?? process.env.UPSTASH_REDIS_REST_TOKEN
 let redis: Redis | null = null
-try {
-  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
-    redis = Redis.fromEnv()
+if (redisUrl && redisToken) {
+  try {
+    redis = new Redis({ url: redisUrl, token: redisToken })
+  } catch {
+    redis = null
   }
-} catch {
-  redis = null
 }
 
 /** Incrementa un comptador amb caducitat i diu si s'ha superat el límit. */
