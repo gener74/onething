@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react'
 import type { Task } from '../db'
 import { breakdownTask, type Feeling } from '../ai'
 import { useI18n } from '../i18n'
+import { Leaves } from './Leaves'
 
 interface Props {
   task: Task
   onClose: () => void
+  onComplete: () => void
   onSteps: (steps: string[]) => void
   onToggleStep: (index: number) => void
   onMinutes: (minutes: number) => void
@@ -23,7 +25,14 @@ const FEELINGS: Feeling[] = ['clar', 'mandra', 'bloquejat', 'ansietat']
 // 0 = sense límit (cap compte enrere ni check-in).
 const TIMES = [2, 5, 15, 30, 0]
 
-export function FocusMode({ task, onClose, onSteps, onToggleStep, onMinutes }: Props) {
+export function FocusMode({
+  task,
+  onClose,
+  onComplete,
+  onSteps,
+  onToggleStep,
+  onMinutes,
+}: Props) {
   const { t, tn, lang } = useI18n()
   const doneSteps = new Set(task.doneSteps ?? [])
   const steps = task.steps ?? []
@@ -42,6 +51,8 @@ export function FocusMode({ task, onClose, onSteps, onToggleStep, onMinutes }: P
   const currentIndex = hasSteps ? steps.findIndex((_, i) => !doneSteps.has(i)) : -1
   const showStep = currentIndex !== -1
   const isLastPending = doneSteps.size === steps.length - 1
+  // Tots els passos fets: no auto-completem; preguntem si la tasca ja està acabada.
+  const allDone = hasSteps && currentIndex === -1
 
   // El cercle: compte enrere del temps que t'has donat (calma, no pressió).
   const total = (task.focusMinutes ?? 0) * 60
@@ -123,6 +134,8 @@ export function FocusMode({ task, onClose, onSteps, onToggleStep, onMinutes }: P
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-paper">
+      {/* Mentre la IA pensa, unes fulles cauen de fons (espera calmada) */}
+      {loading && <Leaves />}
       <button
         onClick={onClose}
         className="fixed top-5 right-5 z-10 text-sm text-muted hover:text-ink transition-colors"
@@ -152,6 +165,28 @@ export function FocusMode({ task, onClose, onSteps, onToggleStep, onMinutes }: P
 
       {loading ? (
         <p className="text-lg text-muted">{t('thinking')}</p>
+      ) : allDone ? (
+        /* Tots els passos fets: tu decideixes si la tasca està acabada o continues */
+        <>
+          <p className="mb-3 max-w-xs truncate text-xs text-muted/70">{task.title}</p>
+          <p className="mb-8 max-w-sm text-xl font-medium leading-snug text-ink">
+            {t('steps_done_q')}
+          </p>
+          <div className="flex w-full max-w-xs flex-col gap-2.5">
+            <button
+              onClick={onComplete}
+              className="rounded-full bg-sage px-8 py-3.5 font-medium text-white shadow-md transition hover:bg-sage-deep active:scale-95"
+            >
+              {t('finished')}
+            </button>
+            <button
+              onClick={regenerate}
+              className="rounded-[var(--radius-soft)] border border-line bg-surface px-5 py-3.5 text-ink transition hover:border-sage hover:text-sage-deep"
+            >
+              {t('keep_going')}
+            </button>
+          </div>
+        </>
       ) : showStep ? (
         /* Un sol pas a la vegada: el teu únic objectiu ara */
         <>

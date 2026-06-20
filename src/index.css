@@ -120,8 +120,7 @@ body {
   animation: pulse-soft 1.4s ease-in-out infinite;
 }
 
-/* Fons relaxant de l'estat buit: fulles de roure de tardor que cauen i deriven.
-   La forma i el color els posa l'SVG (component Leaves); aquí només el moviment. */
+/* Fons relaxant de l'estat buit: fulles de tardor que cauen i deriven, en bucle. */
 @keyframes leaf-fall {
   0% {
     transform: translate3d(0, -12vh, 0) rotate(0deg);

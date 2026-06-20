@@ -2,9 +2,8 @@ import type { CSSProperties } from 'react'
 
 /**
  * Fons relaxant per a l'estat buit: unes poques fulles de tardor que cauen lentes
- * i deriven. Fem servir l'emoji 🍁 / 🍂 (el sistema el dibuixa com una fulla de
- * debò, amb els seus colors) per garantir que es vegi bé a tot arreu. Poques i
- * lentes a propòsit (calma). Es desactiven soles amb `prefers-reduced-motion`.
+ * i deriven, en bucle continu (no s'acumulen). Tons de tardor via emoji 🍁 / 🍂.
+ * Poques i lentes a propòsit (calma). Es desactiven soles amb `prefers-reduced-motion`.
  */
 
 // Paràmetres fixos (no aleatoris) perquè no "saltin" en cada render.

@@ -107,6 +107,9 @@ const DICT: Record<Lang, Dict> = {
     theme_light: 'Light',
     theme_dark: 'Dark',
     decide: 'Decide for me',
+    steps_done_q: 'You’ve done all the steps. How did it go?',
+    finished: 'It’s done ✓',
+    keep_going: 'One more step',
   },
   ca: {
     bucket_now: 'Ara',
@@ -186,6 +189,9 @@ const DICT: Record<Lang, Dict> = {
     theme_light: 'Clar',
     theme_dark: 'Fosc',
     decide: 'Decideix per mi',
+    steps_done_q: 'Has fet tots els passos. Com ha anat?',
+    finished: 'Ja està fet ✓',
+    keep_going: 'Un pas més',
   },
   es: {
     bucket_now: 'Ahora',
@@ -265,6 +271,9 @@ const DICT: Record<Lang, Dict> = {
     theme_light: 'Claro',
     theme_dark: 'Oscuro',
     decide: 'Decide por mí',
+    steps_done_q: 'Has hecho todos los pasos. ¿Cómo ha ido?',
+    finished: 'Ya está hecho ✓',
+    keep_going: 'Un paso más',
   },
 }
 
