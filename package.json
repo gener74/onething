@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "generate-pwa-assets": "pwa-assets-generator",
+    "generate-og": "node scripts/gen-og.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -33,6 +34,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
+    "sharp": "^0.35.2",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.59.2",
     "vite": "^8.0.12"

@@ -1,8 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
-import App from './App.tsx'
-import { Gate } from './components/Gate.tsx'
+import { Root } from './Root.tsx'
 import { I18nProvider } from './i18n.tsx'
 import { requestPersistence } from './db.ts'
 
@@ -22,9 +21,7 @@ void requestPersistence()
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <I18nProvider>
-      <Gate>
-        <App />
-      </Gate>
+      <Root />
     </I18nProvider>
   </StrictMode>,
 )

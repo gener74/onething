@@ -57,7 +57,7 @@ You didn’t plan the whole review. You just started it.
 
 ## Who it’s for
 
-People with **ADHD** · students · knowledge workers · founders · anyone overwhelmed by a large task.
+People with **ADHD** · students · knowledge workers · anyone overwhelmed by a large task.
 
 ## Interesting engineering decisions
 
@@ -144,7 +144,7 @@ No has planificat tota la revisió. Simplement l’has començat.
 
 ## Per a qui és
 
-Persones amb **TDAH** · estudiants · professionals del coneixement · fundadors · qualsevol que se senti aclaparat per una tasca gran.
+Persones amb **TDAH** · estudiants · professionals del coneixement · qualsevol que se senti aclaparat per una tasca gran.
 
 ## Decisions tècniques interessants
 

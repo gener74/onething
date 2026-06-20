@@ -20,6 +20,8 @@ export default defineConfig({
         background_color: '#fbfaf7',
         display: 'standalone',
         orientation: 'portrait',
+        // La PWA instal·lada entra directe a l'app, saltant-se la landing.
+        start_url: '/?app=1',
         // Les icones les injecta @vite-pwa/assets-generator (pwa-assets.config.ts)
       },
     }),
