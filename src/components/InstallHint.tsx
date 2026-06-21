@@ -42,7 +42,9 @@ export function InstallHint() {
       setDeferred(e as BeforeInstallPromptEvent)
     }
     const onInstalled = () => {
-      localStorage.setItem(DISMISS_KEY, '1')
+      // Amaguem el xip per a aquesta sessió, però SENSE persistir-ho: si després
+      // l'usuari desinstal·la, el suggeriment discret ha de poder tornar.
+      // ("Instal·lat" no és el mateix que "descartat" — la ✕ sí que persisteix.)
       setDismissed(true)
     }
     window.addEventListener('beforeinstallprompt', onPrompt)
