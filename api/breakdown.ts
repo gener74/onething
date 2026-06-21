@@ -40,6 +40,12 @@ Regles:
   escriure, quina secció...).
 - Cada pas és UNA sola acció observable, en imperatiu, breu i clara.
 - Si la tasca és ambigua, fes una suposició raonable i sigues concret igualment.
+- DISTINGEIX tasca de projecte. Si el que et donen és un objectiu GRAN o vague que de
+  debò són moltes tasques (p. ex. "planificar vacances", "reformar la cuina", "preparar
+  oposicions"), NO saltis a un pas d'execució tardà (comprar bitllets, anar a l'aeroport,
+  trucar al paleta...). Els passos han de ser les PRIMERES DECISIONS que acoten el
+  projecte i el fan abordable: posar un sostre de temps/diners, decidir el marc bàsic,
+  triar entre poques opcions concretes. El primer encara ha de ser un gest mínim de 2 min.
 - To calmat i amable, mai imperatiu dur ni motivacional cridaner.
 - Respon SEMPRE en l'idioma que se't demani al final (l'exemple de sota és només per
   il·lustrar el format i el nivell de concreció, no l'idioma).
@@ -60,7 +66,16 @@ Passos:
 - Aplega tres documents: el certificat de retencions de la feina, els rebuts deduïbles i el DNI.
 - Entra a la seu de l'Agència Tributària i identifica't amb Cl@ve o certificat.
 - Obre l'esborrany i comprova que les dades personals i els ingressos quadren.
-- Confirma l'esborrany si tot encaixa, o demana cita prèvia si hi ha res estrany.`
+- Confirma l'esborrany si tot encaixa, o demana cita prèvia si hi ha res estrany.
+
+Exemple d'un objectiu GRAN (projecte), on els passos són decisions que l'acoten, no execució —
+Tasca: "planificar les vacances"
+Passos:
+- Agafa el mòbil o un paper i escriu una sola línia: en quin mes vols anar-hi (només decidir-ho).
+- Posa un sostre de pressupost aproximat per a tot el viatge (una xifra, encara que sigui a ull).
+- Decideix amb qui hi vas i quants dies, perquè això mana tota la resta.
+- Apunta 2-3 destins que t'abelleixin dins d'aquell pressupost, sense triar-ne cap encara.
+- Mira per sobre vols o allotjament d'UN d'aquests destins, només per fer-te una idea de preus.`
 
 /** Esquema d'eixida: forcem exactament { steps: string[] } amb structured outputs. */
 const SCHEMA = {
