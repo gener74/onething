@@ -18,9 +18,16 @@ export const LANGS: { code: Lang; label: string }[] = [
 const STORAGE_KEY = 'onething-lang'
 
 function detect(): Lang {
-  // Per defecte, anglès (el més universal). Si l'usuari ha triat un idioma abans,
-  // el respectem. No detectem el del navegador a propòsit: volem una cara per
-  // defecte en anglès per a tothom.
+  // Un enllaç pot fixar l'idioma amb ?lang=ca|es|en (p. ex. per compartir-la amb
+  // amics). Té prioritat i es DESA, perquè la tria persisteixi després — també
+  // quan s'obre la PWA instal·lada, que arrenca a /?app=1 sense el paràmetre.
+  const fromUrl = new URLSearchParams(location.search).get('lang')
+  if (fromUrl === 'en' || fromUrl === 'ca' || fromUrl === 'es') {
+    localStorage.setItem(STORAGE_KEY, fromUrl)
+    return fromUrl
+  }
+  // Si l'usuari ha triat un idioma abans, el respectem. Per defecte, anglès (el
+  // més universal); no detectem el del navegador a propòsit.
   const saved = localStorage.getItem(STORAGE_KEY)
   if (saved === 'en' || saved === 'ca' || saved === 'es') return saved
   return 'en'
