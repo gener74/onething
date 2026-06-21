@@ -24,11 +24,11 @@ Not another to-do list — a coach that helps you begin.
 > You’ve known it for days.
 > You still haven’t started.
 
-**OneThing gets you started.** When a task paralyses you, it doesn’t hand you a plan — it breaks it into one tiny step and stays with you until you’ve begun. **Open it when you’re stuck; leave when you’ve started.**
+**OneThing gets you started.** When a task paralyses you, it doesn’t hand you a plan — it breaks it into one tiny step and stays with you, one step at a time. **Open it when you’re stuck; stay as long as it helps.**
 
 Built for ADHD brains — and anyone who freezes in front of a big task. Most to-do apps make that worse: long lists, dates that expire into guilt, and the silent _“where do I even start?”_. I built it because I live this — I’m my own target user. It’s also a deliberate exercise in calm, _spa-digital_ design and a genuinely **local-first** architecture.
 
-> The difference from ChatGPT: ChatGPT gives you a plan. OneThing accompanies you until you begin.
+> The difference from ChatGPT: ChatGPT gives you a plan. OneThing walks it with you, one step at a time.
 
 ## What it does
 
@@ -111,11 +111,11 @@ No és una altra llista de tasques — un coach que t’ajuda a arrencar.
 > Fa dies que ho saps.
 > Encara no has començat.
 
-**OneThing t’ajuda a començar.** Quan una tasca et paralitza, no et dóna un pla — la parteix en un sol pas petit i es queda amb tu fins que has arrencat. **Obre-la quan estiguis encallat; surt quan ja has començat.**
+**OneThing t’ajuda a començar.** Quan una tasca et paralitza, no et dóna un pla — la parteix en un sol pas petit i es queda amb tu, pas a pas. **Obre-la quan estiguis encallat; queda-t’hi mentre t’ajudi.**
 
 Pensada per a cervells amb TDAH — i per a qualsevol que es bloqueja davant d’una tasca gran. La majoria d’apps ho empitjoren: llistes infinites, dates que caduquen en culpa i el silenciós _“per on començo?”_. L’he feta perquè ho visc — sóc el meu propi usuari objectiu. És també un exercici conscient de disseny calmat (_“spa digital”_) i d’una arquitectura de debò **local-first**.
 
-> La diferència amb ChatGPT: ChatGPT et dóna un pla. OneThing t’acompanya fins que comences.
+> La diferència amb ChatGPT: ChatGPT et dóna un pla. OneThing el camina amb tu, pas a pas.
 
 ## Què fa
 
