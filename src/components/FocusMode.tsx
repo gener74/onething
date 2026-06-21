@@ -50,6 +50,8 @@ export function FocusMode({
   // Check-in en acabar el temps + microcelebració de l'arrencada.
   const [distracted, setDistracted] = useState(false)
   const [cheer, setCheer] = useState(false)
+  // Comiat amable en deixar-ho a mitges (surt quan ja has començat, sense culpa).
+  const [leaving, setLeaving] = useState(false)
   // Quota diària de la IA: si s'ha arribat al límit i quants en queden avui.
   const [aiLimited, setAiLimited] = useState(false)
   const [aiRemaining, setAiRemaining] = useState<number | null>(null)
@@ -140,6 +142,13 @@ export function FocusMode({
     onMinutes(minutes)
     setElapsed(0)
     setAskTime(false)
+  }
+
+  // "Ho deixo per ara": surt amb un comiat amable. El progrés ja està desat
+  // (la tasca queda al calaix amb els passos fets), així que reprendre és directe.
+  function leaveForNow() {
+    setLeaving(true)
+    setTimeout(onClose, 1600)
   }
 
   // "Massa gran": parteix el pas actual en passos encara més petits (amb límit).
@@ -334,6 +343,14 @@ export function FocusMode({
           >
             {t('regen')}
           </button>
+
+          {/* Sortida digna: deixar-ho a mitges no és fracàs */}
+          <button
+            onClick={leaveForNow}
+            className="mt-6 text-sm text-muted/70 transition hover:text-ink"
+          >
+            {t('leave_for_now')}
+          </button>
         </>
       ) : phase === 'time' ? (
         /* Pantalla "Quant temps tens?": acota el primer pas */
@@ -420,6 +437,15 @@ export function FocusMode({
       {cheer && (
         <div className="absolute inset-0 z-30 flex items-center justify-center bg-paper/80 backdrop-blur-sm animate-rise">
           <p className="text-2xl text-sage-deep">{t('cheer_started')}</p>
+        </div>
+      )}
+
+      {/* Comiat amable en deixar-ho per ara: reconeix el progrés si n'hi ha */}
+      {leaving && (
+        <div className="absolute inset-0 z-40 flex items-center justify-center bg-paper/90 px-6 text-center backdrop-blur-sm animate-rise">
+          <p className="max-w-sm text-xl font-medium leading-snug text-sage-deep">
+            {doneSteps.size > 0 ? t('leaving_progress') : t('leaving_fresh')}
+          </p>
         </div>
       )}
     </div>
