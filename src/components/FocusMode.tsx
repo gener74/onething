@@ -314,7 +314,8 @@ export function FocusMode({
           </div>
 
           {aiLimited ? (
-            <p className="mb-4 max-w-xs text-xs leading-relaxed text-muted">
+            <p className="mb-5 max-w-xs rounded-[var(--radius-soft)] bg-sage-soft px-4 py-3 text-sm leading-relaxed text-sage-deep">
+              <span aria-hidden className="mr-1.5">🌙</span>
               {t('ai_limit_reached')}
             </p>
           ) : aiRemaining !== null && aiRemaining > 0 && aiRemaining <= 3 ? (

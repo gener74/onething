@@ -46,10 +46,26 @@ function deviceId(): string {
   return id
 }
 
+/**
+ * Interruptor NOMÉS de desenvolupament: obrir l'app amb `?simlimit=1` força la
+ * pantalla de "límit diari assolit" per poder-la provar sense esgotar la quota
+ * real. `import.meta.env.DEV` és `false` en producció → aquest codi s'elimina del
+ * build (no és cap porta del darrere en producció).
+ */
+function simulatesLimit(): boolean {
+  return (
+    import.meta.env.DEV &&
+    new URLSearchParams(location.search).get('simlimit') === '1'
+  )
+}
+
 export async function breakdownTask(
   title: string,
   ctx: BreakdownContext = {},
 ): Promise<Breakdown> {
+  if (simulatesLimit()) {
+    return { steps: heuristicBreakdown(title, ctx), fromAI: false, limited: true }
+  }
   try {
     const res = await fetch('/api/breakdown', {
       method: 'POST',
