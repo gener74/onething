@@ -241,20 +241,8 @@ export default function App() {
                   {byBucket[key].map((task) => (
                     <li
                       key={task.id}
-                      className="group flex items-center gap-2 rounded-[var(--radius-soft)] border border-line bg-surface px-4 py-3 animate-rise"
+                      className="rounded-[var(--radius-soft)] border border-line bg-surface px-4 py-3 animate-rise"
                     >
-                      <button
-                        onClick={() => markDone(task.id)}
-                        aria-label={t('mark_done')}
-                        title={t('mark_done')}
-                        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 text-xs transition ${
-                          completingId === task.id
-                            ? 'scale-110 border-sage bg-sage text-white'
-                            : 'border-sage/40 text-transparent hover:border-sage hover:text-sage/70'
-                        }`}
-                      >
-                        ✓
-                      </button>
                       {editingId === task.id ? (
                         <input
                           value={editDraft}
@@ -269,38 +257,44 @@ export default function App() {
                             }
                           }}
                           autoFocus
-                          className="min-w-0 flex-1 rounded-[var(--radius-soft)] border border-sage bg-surface px-2 py-1 text-ink focus:outline-none"
+                          className="w-full rounded-[var(--radius-soft)] border border-sage bg-surface px-2 py-1 text-ink focus:outline-none"
                         />
                       ) : (
-                        <button
-                          onClick={() => startEdit(task)}
-                          title={t('edit')}
-                          className="min-w-0 flex-1 truncate text-left text-ink"
-                        >
-                          {task.title}
-                        </button>
+                        <>
+                          {/* El títol té la seva pròpia línia: sempre visible, mai
+                              tallat (fa salt de línia si cal). */}
+                          <p className="break-words leading-snug text-ink">{task.title}</p>
+
+                          {/* Fila d'accions: Comença (només a Ara) és el botó principal;
+                              a la dreta, completar i el menú ⋯ (mou/edita/esborra). */}
+                          <div className="mt-2.5 flex items-center gap-2">
+                            {key === 'now' && (
+                              <button
+                                onClick={() => setFocusId(task.id)}
+                                className="rounded-full bg-sage px-5 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-sage-deep active:scale-95"
+                              >
+                                {/* Si ja hi ha micro-passos fets, és reprendre, no començar. */}
+                                {(task.doneSteps?.length ?? 0) > 0 ? t('resume') : t('start')}
+                              </button>
+                            )}
+                            <div className="ml-auto flex items-center gap-1.5">
+                              <button
+                                onClick={() => markDone(task.id)}
+                                aria-label={t('mark_done')}
+                                title={t('mark_done')}
+                                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 text-xs transition ${
+                                  completingId === task.id
+                                    ? 'scale-110 border-sage bg-sage text-white'
+                                    : 'border-sage/50 text-sage/60 hover:border-sage hover:bg-sage-soft hover:text-sage-deep'
+                                }`}
+                              >
+                                ✓
+                              </button>
+                              <TaskMenu task={task} onEdit={() => startEdit(task)} />
+                            </div>
+                          </div>
+                        </>
                       )}
-
-                      {key === 'now' && (
-                        <button
-                          onClick={() => setFocusId(task.id)}
-                          className="rounded-full bg-sage-soft px-3 py-1.5 text-sm text-sage-deep transition hover:bg-sage hover:text-white"
-                        >
-                          {/* Si ja hi ha micro-passos fets, és reprendre, no començar. */}
-                          {(task.doneSteps?.length ?? 0) > 0 ? t('resume') : t('start')}
-                        </button>
-                      )}
-
-                      <BucketMenu task={task} />
-
-                      <button
-                        onClick={() => deleteTask(task.id)}
-                        aria-label={t('delete')}
-                        title={t('delete')}
-                        className="text-muted/50 transition hover:text-ink"
-                      >
-                        ✕
-                      </button>
                     </li>
                   ))}
                 </ul>
@@ -416,22 +410,60 @@ export default function App() {
   )
 }
 
-/** Botons discrets per moure una tasca entre calaixos. */
-function BucketMenu({ task }: { task: Task }) {
+/**
+ * Menú ⋯ d'accions secundàries d'una tasca: editar, moure-la de calaix i
+ * esborrar-la. Plegar-les aquí allibera la fila perquè el títol i el botó
+ * "Comença" respirin (igual a escriptori que a mòbil). Es tanca tocant fora.
+ */
+function TaskMenu({ task, onEdit }: { task: Task; onEdit: () => void }) {
   const { t } = useI18n()
+  const [open, setOpen] = useState(false)
   const targets = BUCKETS.filter((b) => b !== task.bucket)
+  const item =
+    'block w-full px-4 py-2.5 text-left text-sm text-ink transition hover:bg-sage-soft hover:text-sage-deep'
   return (
-    <div className="flex gap-1 transition [@media(hover:hover)]:opacity-60 [@media(hover:hover)]:group-hover:opacity-100">
-      {targets.map((b) => (
-        <button
-          key={b}
-          onClick={() => moveTask(task.id, b)}
-          title={t('move_to', { label: t(`bucket_${b}`) })}
-          className="rounded-full px-2 py-1 text-xs text-muted transition hover:bg-sage-soft hover:text-sage-deep"
-        >
-          {t(`bucket_${b}`)}
-        </button>
-      ))}
+    <div className="relative">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        aria-label={t('more_actions')}
+        title={t('more_actions')}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-muted/60 transition hover:bg-sage-soft hover:text-sage-deep"
+      >
+        ⋯
+      </button>
+      {open && (
+        <>
+          {/* Rerefons invisible: tocar fora tanca el menú (també al mòbil) */}
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} aria-hidden />
+          <div
+            role="menu"
+            className="absolute right-0 z-20 mt-1 min-w-[10rem] overflow-hidden rounded-[var(--radius-soft)] border border-line bg-surface py-1 shadow-lg"
+          >
+            <button role="menuitem" onClick={() => { onEdit(); setOpen(false) }} className={item}>
+              {t('edit')}
+            </button>
+            {targets.map((b) => (
+              <button
+                key={b}
+                role="menuitem"
+                onClick={() => { moveTask(task.id, b); setOpen(false) }}
+                className={item}
+              >
+                {t('move_to', { label: t(`bucket_${b}`) })}
+              </button>
+            ))}
+            <button
+              role="menuitem"
+              onClick={() => { deleteTask(task.id); setOpen(false) }}
+              className="block w-full px-4 py-2.5 text-left text-sm text-muted transition hover:bg-sage-soft hover:text-ink"
+            >
+              {t('delete')}
+            </button>
+          </div>
+        </>
+      )}
     </div>
   )
 }
