@@ -9,6 +9,7 @@ interface Props {
   onClose: () => void
   onComplete: () => void
   onSteps: (steps: string[]) => void
+  onReplaceStep: (index: number, smaller: string[]) => void
   onToggleStep: (index: number) => void
   onMinutes: (minutes: number) => void
 }
@@ -33,6 +34,7 @@ export function FocusMode({
   onClose,
   onComplete,
   onSteps,
+  onReplaceStep,
   onToggleStep,
   onMinutes,
 }: Props) {
@@ -62,18 +64,24 @@ export function FocusMode({
   // Tots els passos fets: no auto-completem; preguntem si la tasca ja està acabada.
   const allDone = hasSteps && currentIndex === -1
 
+  // En REPRENDRE una tasca que ja té passos pendents, tornem a preguntar quant
+  // de temps et dónes ara (cada sessió ho decideixes de nou) abans de mostrar el
+  // pas. Es decideix només al muntar: un cop tries el temps, deixem de preguntar.
+  const [askTime, setAskTime] = useState(() => hasSteps && currentIndex !== -1)
+
   // El cercle: compte enrere del temps que t'has donat (calma, no pressió).
   const total = (task.focusMinutes ?? 0) * 60
   const remaining = Math.max(total - elapsed, 0)
   // Check-in derivat: quan s'esgota el temps triat, el panell apareix sol.
   const timeUp = showStep && total > 0 && elapsed >= total
 
-  // El compte enrere només corre quan ja hi ha un pas a la vista (la IA ha respost).
+  // El compte enrere només corre quan hi ha un pas a la vista I la IA no està
+  // pensant: el temps d'espera (p. ex. en demanar "Massa gran") no et menja minuts.
   useEffect(() => {
-    if (!showStep) return
+    if (!showStep || loading) return
     const id = setInterval(() => setElapsed((e) => e + 1), 1000)
     return () => clearInterval(id)
-  }, [showStep])
+  }, [showStep, loading])
 
   // Tecla Escape per sortir.
   useEffect(() => {
@@ -123,6 +131,15 @@ export function FocusMode({
     setAiLimited(false)
     setAiRemaining(null)
     setSimplerCount(0)
+    setAskTime(false)
+  }
+
+  // Reprendre: ja hi ha passos, només fixem el temps triat i mostrem el pas
+  // (sense tornar a cridar la IA).
+  function resumeWithTime(minutes: number) {
+    onMinutes(minutes)
+    setElapsed(0)
+    setAskTime(false)
   }
 
   // "Massa gran": parteix el pas actual en passos encara més petits (amb límit).
@@ -139,7 +156,9 @@ export function FocusMode({
           simpler: true,
         },
       )
-      onSteps(smaller)
+      // Encaixem els sub-passos al lloc del pas actual i conservem el progrés
+      // (els passos ja fets i els posteriors no es perden).
+      onReplaceStep(currentIndex, smaller)
       setSimplerCount((c) => c + 1)
       setAiLimited(!!limited)
       setAiRemaining(
@@ -172,6 +191,32 @@ export function FocusMode({
   }
 
   const timeLabel = (m: number) => (m === 0 ? t('no_limit') : tn('minutes', m))
+
+  // Pantalla "Quant temps tens?": compartida pel flux de tasca nova (després de
+  // "com et sents", crida la IA) i per la represa (només fixa el temps).
+  const timeScreen = (onPick: (m: number) => void, onBack: () => void) => (
+    <>
+      <p className="mb-3 max-w-xs truncate text-xs text-muted/70">{task.title}</p>
+      <h1 className="mb-8 text-2xl font-medium text-ink sm:text-3xl">{t('time_q')}</h1>
+      <div className="flex w-full max-w-xs flex-col gap-2.5">
+        {TIMES.map((m) => (
+          <button
+            key={m}
+            onClick={() => onPick(m)}
+            className="rounded-[var(--radius-soft)] border border-line bg-surface px-5 py-3.5 text-ink transition hover:border-sage hover:text-sage-deep"
+          >
+            {timeLabel(m)}
+          </button>
+        ))}
+      </div>
+      <button
+        onClick={onBack}
+        className="mt-8 text-sm text-muted transition hover:text-ink"
+      >
+        {t('back')}
+      </button>
+    </>
+  )
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-paper">
@@ -206,6 +251,9 @@ export function FocusMode({
 
       {loading ? (
         <p className="text-lg text-muted">{t('thinking')}</p>
+      ) : askTime ? (
+        /* Reprenent una tasca: tornem a triar quant de temps ens donem ara */
+        timeScreen(resumeWithTime, onClose)
       ) : allDone ? (
         /* Tots els passos fets: tu decideixes si la tasca està acabada o continues */
         <>
@@ -289,27 +337,7 @@ export function FocusMode({
         </>
       ) : phase === 'time' ? (
         /* Pantalla "Quant temps tens?": acota el primer pas */
-        <>
-          <p className="mb-3 max-w-xs truncate text-xs text-muted/70">{task.title}</p>
-          <h1 className="mb-8 text-2xl font-medium text-ink sm:text-3xl">{t('time_q')}</h1>
-          <div className="flex w-full max-w-xs flex-col gap-2.5">
-            {TIMES.map((m) => (
-              <button
-                key={m}
-                onClick={() => startBreakdown(m)}
-                className="rounded-[var(--radius-soft)] border border-line bg-surface px-5 py-3.5 text-ink transition hover:border-sage hover:text-sage-deep"
-              >
-                {timeLabel(m)}
-              </button>
-            ))}
-          </div>
-          <button
-            onClick={() => setPhase('feeling')}
-            className="mt-8 text-sm text-muted transition hover:text-ink"
-          >
-            {t('back')}
-          </button>
-        </>
+        timeScreen(startBreakdown, () => setPhase('feeling'))
       ) : (
         /* Pantalla "Com et sents?": context emocional per a la IA (entrada directa) */
         <>

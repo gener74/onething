@@ -78,6 +78,26 @@ export function setSteps(id: number, steps: string[]) {
   return db.tasks.update(id, { steps, doneSteps: [] })
 }
 
+/**
+ * "Massa gran": substitueix NOMÉS el pas `index` pels sub-passos més petits,
+ * conservant el progrés. Com que `index` és sempre el primer pas pendent, tot
+ * el d'abans està fet (segueix fet) i tot el d'ençà està pendent.
+ */
+export function replaceStep(id: number, index: number, smaller: string[]) {
+  return db.transaction('rw', db.tasks, async () => {
+    const t = await db.tasks.get(id)
+    if (!t?.steps) return
+    const steps = [
+      ...t.steps.slice(0, index),
+      ...smaller,
+      ...t.steps.slice(index + 1),
+    ]
+    // Els passos anteriors a `index` segueixen fets; els nous i els posteriors, pendents.
+    const doneSteps = Array.from({ length: index }, (_, i) => i)
+    await db.tasks.update(id, { steps, doneSteps })
+  })
+}
+
 /** Minuts que l'usuari es dóna ara per a la tasca (alimenta el compte enrere). */
 export function setFocusMinutes(id: number, minutes: number) {
   return db.tasks.update(id, { focusMinutes: minutes })
@@ -99,9 +119,13 @@ export function completeTask(id: number) {
   return db.tasks.update(id, { done: 1, completedAt: Date.now() })
 }
 
-/** Torna una tasca feta cap als calaixos (desfer). Manté el calaix que tenia. */
+/**
+ * Torna una tasca feta cap als calaixos (desfer). Manté el calaix que tenia.
+ * Reinicia els micro-passos marcats: desfer una tasca acabada vol dir tornar-la
+ * a fer des de zero, no quedar encallat al darrer pas.
+ */
 export function reopenTask(id: number) {
-  return db.tasks.update(id, { done: 0, completedAt: undefined })
+  return db.tasks.update(id, { done: 0, completedAt: undefined, doneSteps: [] })
 }
 
 export function deleteTask(id: number) {

@@ -10,6 +10,7 @@ import {
   deleteTask,
   clearDone,
   setSteps,
+  replaceStep,
   setFocusMinutes,
   toggleStep,
   isToday,
@@ -285,7 +286,8 @@ export default function App() {
                           onClick={() => setFocusId(task.id)}
                           className="rounded-full bg-sage-soft px-3 py-1.5 text-sm text-sage-deep transition hover:bg-sage hover:text-white"
                         >
-                          {t('start')}
+                          {/* Si ja hi ha micro-passos fets, és reprendre, no començar. */}
+                          {(task.doneSteps?.length ?? 0) > 0 ? t('resume') : t('start')}
                         </button>
                       )}
 
@@ -363,6 +365,7 @@ export default function App() {
           onClose={() => setFocusId(null)}
           onComplete={() => handleComplete(focusTask.id, true)}
           onSteps={(steps) => setSteps(focusTask.id, steps)}
+          onReplaceStep={(index, smaller) => replaceStep(focusTask.id, index, smaller)}
           onMinutes={(minutes) => setFocusMinutes(focusTask.id, minutes)}
           onToggleStep={(index) => toggleStep(focusTask.id, index)}
         />
@@ -418,7 +421,7 @@ function BucketMenu({ task }: { task: Task }) {
   const { t } = useI18n()
   const targets = BUCKETS.filter((b) => b !== task.bucket)
   return (
-    <div className="flex gap-1 transition [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100">
+    <div className="flex gap-1 transition [@media(hover:hover)]:opacity-60 [@media(hover:hover)]:group-hover:opacity-100">
       {targets.map((b) => (
         <button
           key={b}
