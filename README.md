@@ -5,7 +5,7 @@
 **A calm tool for people who get stuck before starting.**
 Not another to-do list — a coach that helps you begin.
 
-[**Live demo →**](https://getonething.vercel.app) · _private preview, password: `onething`_
+[**Live demo →**](https://getonething.vercel.app) · _free · no sign-up · your data stays on your device_
 
 🇬🇧 English · [🌿 Català més avall](#-onething--una-cosa-a-la-vegada-1)
 
@@ -101,7 +101,7 @@ The AI lives in the serverless function `api/breakdown.ts` and needs a Claude ke
 **Una eina calmada per a qui s’encalla abans de començar.**
 No és una altra llista de tasques — un coach que t’ajuda a arrencar.
 
-[**Prova la demo →**](https://getonething.vercel.app) · _versió privada, contrasenya: `onething`_
+[**Prova-la →**](https://getonething.vercel.app) · _gratis · sense compte · les teves dades es queden al dispositiu_
 
 </div>
 
