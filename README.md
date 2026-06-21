@@ -36,7 +36,7 @@ The heart of it — **“I don’t know where to start”:**
 
 - **It gets you started.** It breaks the paralysing task into tiny, concrete actions, shown **one at a time** — never the whole list.
 - **Context-aware.** First it asks _how you feel_ and _how much time_ you have, so the very first step fits your state right now.
-- **Coach, not manager.** A gentle check-in when your time’s up — _“distracted? no problem, let’s go back: open the document.”_ No judgement, no guilt. A quiet “you’ve started” after the first step.
+- **Coach, not manager.** A gentle check-in when your time’s up — _“distracted? no problem, let’s go back: open the document.”_ No judgement, no guilt. A quiet “you’ve started” after the first step. Still stuck? Ask for an even smaller step. Come back later and it picks up where you left off.
 
 The calm scaffolding around it:
 
@@ -123,7 +123,7 @@ El moll de l’os — **“No sé per on començar”:**
 
 - **T’ajuda a començar.** Parteix la tasca que et paralitza en accions concretes i petites, mostrades **una a una** — mai la llista sencera.
 - **Amb context.** Primer et pregunta _com et sents_ i _quant temps_ tens, perquè el primer pas s’ajusti al teu estat d’ara mateix.
-- **Coach, no gestor.** Un check-in suau en acabar el temps — _“t’has distret? cap problema, tornem-hi: obre el document.”_ Sense judici, sense culpa. I un discret “ja has començat” al primer pas.
+- **Coach, no gestor.** Un check-in suau en acabar el temps — _“t’has distret? cap problema, tornem-hi: obre el document.”_ Sense judici, sense culpa. I un discret “ja has començat” al primer pas. Encara encallat? Demana un pas encara més petit. I si tornes més tard, reprèn allà on ho vas deixar.
 
 L’escenari calmat al voltant:
 
