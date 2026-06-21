@@ -141,8 +141,8 @@ Si falla (sense xarxa, endpoint no desplegat, error) → `heuristicBreakdown()` 
 **Servidor — `api/breakdown.ts`** (funció serverless de Vercel)
 1. Comprova mètode POST, mateix origen i rate limit (vegeu sota).
 2. Crida Claude (`client.messages.create`) amb:
-   - `model: 'claude-sonnet-4-6'`
-   - `output_config.effort: 'medium'` — com de profund pensa (low/medium/high).
+   - `model: 'claude-sonnet-4-6'` — l'app és català-first i el model ha de fer bon català
+     (vegeu la nota a la guia pràctica, més avall). No passem `effort` (no cal aquí).
    - `output_config.format` amb **structured outputs** (`json_schema`) → força exactament
      `{ steps: string[] }`, sense parsing fràgil.
    - `SYSTEM` — les instruccions de com partir la tasca (to, nombre de passos, prohibir
@@ -152,8 +152,10 @@ Si falla (sense xarxa, endpoint no desplegat, error) → `heuristicBreakdown()` 
 
 **Protecció de l'endpoint** (dissuasius, no barreres dures):
 - `sameOrigin()` — bloqueja altres webs i `curl` sense capçalera `Origin`.
-- Rate limit en memòria (20/min per IP) — best-effort; en serverless cada instància té la
-  seva memòria. La barrera dura real és el límit de despesa d'Anthropic a la consola.
+- Rate limit compartit amb **Upstash Redis**: ració diària per dispositiu (25, el "pla
+  gratuït"), sostre diari per IP (150) i ràfega per IP (20/min). Comptadors anònims, cap
+  dada d'usuari; si no hi ha Upstash configurat (p. ex. en local) → fail-open. La barrera
+  dura final és el límit de despesa d'Anthropic a la consola.
 
 ---
 
@@ -199,8 +201,11 @@ tota la UI.
 `radial-gradient` al `body` (`0.13`/`0.06`).
 
 **Editar com parteix les tasques la IA** → `api/breakdown.ts`, constant `SYSTEM` (to,
-nombre de passos, exemples). Per a respostes més/menys profundes: `effort` (`low`/`medium`/
-`high`). Per canviar de model o abaratir: el camp `model` (p. ex. `claude-haiku-4-5`).
+nombre de passos, exemples). Per canviar de model: el camp `model`.
+⚠️ **NO baixis a `claude-haiku-4-5` per estalviar:** es va provar (2026-06-21) i trencava el
+català — inventava paraules ("Chegeix" per "Llegeix"), triava mots absurds (un gos que
+"xisclava") i barrejava tractaments (tu/vós). L'app és català-first → Sonnet 4.6 és el mínim,
+i el sobrecost és menyspreable a aquesta escala.
 ⚠️ Els canvis a `api/` només s'apliquen en producció o amb `vercel dev`.
 
 **Millorar el fallback local** → `src/ai.ts`, funció `heuristicBreakdown()`.

@@ -73,8 +73,9 @@ desplega sol a producció.
   `npm run generate-pwa-assets` per regenerar).
 - `prefers-reduced-motion`: FET.
 - Click-through final de l'app live al navegador.
-- (Opcional) si el cost importa, baixar de `claude-sonnet-4-6` a `claude-haiku-4-5`
-  canviant només el `model` a `api/breakdown.ts`.
+- ⚠️ Model: `claude-sonnet-4-6`. **NO baixis a `claude-haiku-4-5` per estalviar** — es va
+  provar (2026-06-21) i trencava el català (inventava paraules, barrejava tu/vós). L'app és
+  català-first → Sonnet és el mínim; el sobrecost és menyspreable a aquesta escala.
 
 ## Idea aparcada (per a després d'`onething`)
 

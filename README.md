@@ -64,7 +64,7 @@ People with **ADHD** · students · knowledge workers · anyone overwhelmed by a
 These are the bits I’d talk through in an interview:
 
 - **Local-first as a legal feature.** No backend for user data, no accounts → no GDPR surface. The browser’s IndexedDB is the only store; `requestPersistence()` upgrades it to durable. Portability is honest: user-controlled JSON export/import.
-- **The AI key never reaches the browser.** Breakdown runs in a Vercel serverless function (`api/breakdown.ts`) that holds `ANTHROPIC_API_KEY` server-side and calls Claude (`claude-haiku-4-5`) with **structured outputs** (a JSON schema forcing `{ steps }`).
+- **The AI key never reaches the browser.** Breakdown runs in a Vercel serverless function (`api/breakdown.ts`) that holds `ANTHROPIC_API_KEY` server-side and calls Claude (`claude-sonnet-4-6`) with **structured outputs** (a JSON schema forcing `{ steps }`). Sonnet over cheaper Haiku on purpose: the product is Catalan-first and the smaller model fabricated words — at this scale the cost delta is negligible.
 - **Cost & abuse control for a public AI endpoint.** A shared rate limiter (Upstash Redis) enforces a per-device daily quota (the free tier) plus per-IP daily and burst caps — anonymous counters only, no user data — behind a same-origin check, with a hard Anthropic spend cap as the ceiling. Over quota degrades gracefully to a local heuristic and a calm "back tomorrow" message.
 - **Graceful degradation.** If the endpoint is down, blocked, or over quota, the client falls back to a local heuristic so the UX never breaks.
 - **`done` is stored as `0 | 1`, not a boolean** — IndexedDB can’t index booleans, and the queries rely on `.where('done').equals(0|1)`.
@@ -149,7 +149,7 @@ Persones amb **TDAH** · estudiants · professionals del coneixement · qualsevo
 ## Decisions tècniques interessants
 
 - **Local-first com a garantia legal.** Cap backend de dades, sense comptes → sense RGPD. IndexedDB és l’únic magatzem; `requestPersistence()` el fa durador. Portabilitat honesta: export/import en JSON que controles tu.
-- **La clau d’IA no arriba mai al navegador.** El desglossament corre en una funció serverless (`api/breakdown.ts`) que guarda `ANTHROPIC_API_KEY` al servidor i crida Claude (`claude-haiku-4-5`) amb **structured outputs** (un esquema JSON que força `{ steps }`).
+- **La clau d’IA no arriba mai al navegador.** El desglossament corre en una funció serverless (`api/breakdown.ts`) que guarda `ANTHROPIC_API_KEY` al servidor i crida Claude (`claude-sonnet-4-6`) amb **structured outputs** (un esquema JSON que força `{ steps }`). Sonnet i no pas el Haiku, més barat, a propòsit: l’app és català-first i el model petit inventava paraules; a aquesta escala el sobrecost és menyspreable.
 - **Control de cost i abús d’un endpoint d’IA públic.** Un rate limiter compartit (Upstash Redis) aplica una quota diària per dispositiu (el pla gratuït) més sostres diari i de ràfega per IP — només comptadors anònims, cap dada d’usuari — darrere d’una comprovació de mateix origen, amb un sostre de despesa d’Anthropic com a límit dur. En superar la quota, degrada amablement a un heurístic local i un missatge “demà torna”.
 - **Degradació elegant.** Si l’endpoint falla, es bloqueja o se supera la quota, el client cau a un heurístic local i la UX no es trenca mai.
 - **`done` es desa com a `0 | 1`, no booleà** — IndexedDB no pot indexar booleans; les consultes fan `.where('done').equals(0|1)`.
