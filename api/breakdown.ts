@@ -92,8 +92,8 @@ const SCHEMA = {
 
 // --- Límits de cost i abús ---
 
-const DAILY_PER_DEVICE = 10 // ració gratuïta diària per dispositiu (el "pla gratuït")
-const DAILY_PER_IP = 60 // tallaffoc anti-abús per IP (cobreix IPs compartides)
+const DAILY_PER_DEVICE = 25 // ració gratuïta diària per dispositiu (el "pla gratuït")
+const DAILY_PER_IP = 150 // tallaffoc anti-abús per IP (cobreix IPs compartides)
 const BURST_PER_IP = 20 // ràfega per minut per IP (atura bots)
 const DAY_TTL = 90_000 // ~25 h, perquè les claus diàries es netegin soles
 
