@@ -22,9 +22,11 @@ import { Redis } from '@upstash/redis'
 
 const client = new Anthropic() // llegeix ANTHROPIC_API_KEY de l'entorn
 
-// Haiku 4.5: ~3-4× més econòmic que Sonnet i prou per a una tasca tan acotada
-// (partir en 3-5 passos). NOTA: Haiku NO admet el paràmetre `effort` (donaria 400).
-const MODEL = 'claude-haiku-4-5'
+// Sonnet 4.6: l'app és català-first i Haiku 4.5 fabricava paraules ("Chegeix"
+// en lloc de "Llegeix") i barrejava registres (tu/vós) als passos. El sobrecost
+// és menyspreable a aquesta escala i la fidelitat del català ho compensa de sobres.
+// No fem servir el paràmetre `effort` (no cal per a una tasca tan acotada).
+const MODEL = 'claude-sonnet-4-6'
 
 const SYSTEM = `Ets un ajudant per a cervells amb TDAH dins d'una eina de focus calmada.
 L'usuari et dóna una tasca que el paralitza. Parteix-la en passos petits i CONCRETS
@@ -47,6 +49,10 @@ Regles:
   projecte i el fan abordable: posar un sostre de temps/diners, decidir el marc bàsic,
   triar entre poques opcions concretes. El primer encara ha de ser un gest mínim de 2 min.
 - To calmat i amable, mai imperatiu dur ni motivacional cridaner.
+- Adreça't a l'usuari de TU (imperatiu singular: «llegeix», «torna», «fes», «obre»),
+  MAI de vós ni de vostè, i mantén el MATEIX tractament a tots els passos. Escriu en
+  català estàndard i correcte: no inventis paraules ni en barregis d'altres llengües,
+  i tria el mot precís per a cada cosa (p. ex. un gos no «xiscla»).
 - Respon SEMPRE en l'idioma que se't demani al final (l'exemple de sota és només per
   il·lustrar el format i el nivell de concreció, no l'idioma).
 - No afegeixis introduccions, números ni explicacions: només els passos.
