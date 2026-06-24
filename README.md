@@ -70,6 +70,18 @@ These are the bits I’d talk through in an interview:
 - **`done` is stored as `0 | 1`, not a boolean** — IndexedDB can’t index booleans, and the queries rely on `.where('done').equals(0|1)`.
 - **Buckets over dates** — a product decision encoded in the data model to avoid the anxiety of expiring deadlines.
 - **Accessibility & calm** — everything respects `prefers-reduced-motion` (the breathing circle and the falling-leaves empty state stop cleanly).
+- **Measuring success without betraying local-first.** The north-star is the **started-rate**: of all breakdowns shown, how many lead to a first step actually done. It’s measured with two anonymous global counters in Upstash (`api/event.ts`) — **no content, no identifier, just a `+1`** — so the privacy promise holds.
+
+## Measuring whether it works
+
+**started-rate = `m:started:total` / `m:shown:total`** — of all the breakdowns shown, how many reach a first step.
+
+Read it in the Upstash console → `onething-redis` → **Data Browser** → filter `m:*`:
+
+- `m:shown:total` — breakdowns shown _(denominator)_
+- `m:started:total` — sessions where the first step was completed _(numerator)_
+
+These counters **don’t expire**, so they’re the real history — unlike the `q:dev:*` daily-quota keys (~25 h TTL) or Vercel’s free log retention (~30 min). The pings are best-effort, so the number is approximate (a validation signal, not accounting), and it says nothing about _who_ or _what_ — anonymous on purpose.
 
 ## Stack
 
@@ -155,6 +167,18 @@ Persones amb **TDAH** · estudiants · professionals del coneixement · qualsevo
 - **`done` es desa com a `0 | 1`, no booleà** — IndexedDB no pot indexar booleans; les consultes fan `.where('done').equals(0|1)`.
 - **Calaixos en lloc de dates** — una decisió de producte codificada al model de dades per evitar l’angoixa dels terminis.
 - **Accessibilitat i calma** — tot respecta `prefers-reduced-motion`.
+- **Mesurar l’èxit sense trair el local-first.** La north-star és el **started-rate**: de tots els desglossaments mostrats, quants porten a fer de debò el primer pas. Es mesura amb dos comptadors globals i anònims a Upstash (`api/event.ts`) — **sense cap contingut, sense cap identificador, només un `+1`** — així la promesa de privacitat es manté.
+
+## Mesurar si funciona
+
+**started-rate = `m:started:total` / `m:shown:total`** — de tots els desglossaments mostrats, quants arriben al primer pas.
+
+Llegeix-ho a la consola d’Upstash → `onething-redis` → **Data Browser** → filtre `m:*`:
+
+- `m:shown:total` — desglossaments mostrats _(denominador)_
+- `m:started:total` — sessions on s’ha completat el primer pas _(numerador)_
+
+Aquests comptadors **no caduquen**, així que són l’històric de debò — a diferència de les claus de quota diària `q:dev:*` (TTL ~25 h) o de la retenció de logs gratuïta de Vercel (~30 min). Els pings són best-effort: el número és aproximat (un senyal de validació, no comptabilitat) i no diu res de _qui_ ni _què_ — anònim a propòsit.
 
 ## Stack
 
