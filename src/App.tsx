@@ -362,6 +362,7 @@ export default function App() {
           onReplaceStep={(index, smaller) => replaceStep(focusTask.id, index, smaller)}
           onMinutes={(minutes) => setFocusMinutes(focusTask.id, minutes)}
           onToggleStep={(index) => toggleStep(focusTask.id, index)}
+          onCaptureNext={(title) => addTask(title, 'next')}
         />
       )}
 

@@ -12,6 +12,7 @@ interface Props {
   onReplaceStep: (index: number, smaller: string[]) => void
   onToggleStep: (index: number) => void
   onMinutes: (minutes: number) => void
+  onCaptureNext: (title: string) => void
 }
 
 /** Format mm:ss */
@@ -37,6 +38,7 @@ export function FocusMode({
   onReplaceStep,
   onToggleStep,
   onMinutes,
+  onCaptureNext,
 }: Props) {
   const { t, tn, lang } = useI18n()
   const doneSteps = new Set(task.doneSteps ?? [])
@@ -57,6 +59,11 @@ export function FocusMode({
   const [aiRemaining, setAiRemaining] = useState<number | null>(null)
   // Quantes vegades s'ha demanat "Massa gran" en aquesta sessió.
   const [simplerCount, setSimplerCount] = useState(0)
+  // "Anota la següent cosa": capturar la propera acció d'un projecte sense
+  // sortir a mà al brain dump. capturing = camp obert; captured = confirmació.
+  const [capturing, setCapturing] = useState(false)
+  const [nextDraft, setNextDraft] = useState('')
+  const [captured, setCaptured] = useState(false)
 
   // El primer pas pendent és el nostre "únic objectiu ara". Mai ensenyem la
   // llista sencera: una sola cosa a la vegada (menys càrrega cognitiva).
@@ -144,6 +151,19 @@ export function FocusMode({
     onMinutes(minutes)
     setElapsed(0)
     setAskTime(false)
+  }
+
+  // "Anota la següent cosa": desa la propera acció concreta al calaix Després
+  // (no completem el projecte; només capturem perquè no es perdi) i sortim amb
+  // una confirmació breu.
+  function captureNext() {
+    const text = nextDraft.trim()
+    if (!text) return
+    onCaptureNext(text)
+    setNextDraft('')
+    setCapturing(false)
+    setCaptured(true)
+    setTimeout(onClose, 1600)
   }
 
   // "Ho deixo per ara": surt amb un comiat amable. El progrés ja està desat
@@ -268,26 +288,75 @@ export function FocusMode({
         /* Reprenent una tasca: tornem a triar quant de temps ens donem ara */
         timeScreen(resumeWithTime, onClose)
       ) : allDone ? (
-        /* Tots els passos fets: tu decideixes si la tasca està acabada o continues */
+        /* Tots els passos fets: tu decideixes si la tasca està acabada, continues
+           o anotes la següent cosa (útil quan era un projecte i el procés segueix) */
         <>
           <p className="mb-3 max-w-xs truncate text-xs text-muted/70">{task.title}</p>
-          <p className="mb-8 max-w-sm text-xl font-medium leading-snug text-ink">
-            {t('steps_done_q')}
-          </p>
-          <div className="flex w-full max-w-xs flex-col gap-2.5">
-            <button
-              onClick={onComplete}
-              className="rounded-full bg-sage px-8 py-3.5 font-medium text-white shadow-md transition hover:bg-sage-deep active:scale-95"
-            >
-              {t('finished')}
-            </button>
-            <button
-              onClick={regenerate}
-              className="rounded-[var(--radius-soft)] border border-line bg-surface px-5 py-3.5 text-ink transition hover:border-sage hover:text-sage-deep"
-            >
-              {t('keep_going')}
-            </button>
-          </div>
+          {capturing ? (
+            <>
+              <p className="mb-6 max-w-sm text-xl font-medium leading-snug text-ink">
+                {t('capture_next')}
+              </p>
+              <input
+                value={nextDraft}
+                onChange={(e) => setNextDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    captureNext()
+                  }
+                }}
+                placeholder={t('capture_next_ph')}
+                aria-label={t('capture_next')}
+                autoFocus
+                className="w-full max-w-xs rounded-[var(--radius-soft)] border border-line bg-surface px-4 py-3.5 text-center text-ink placeholder:text-muted/70 focus:border-sage focus:outline-none"
+              />
+              <div className="mt-4 flex w-full max-w-xs flex-col gap-2.5">
+                <button
+                  onClick={captureNext}
+                  disabled={!nextDraft.trim()}
+                  className="rounded-full bg-sage px-8 py-3.5 font-medium text-white shadow-md transition hover:bg-sage-deep active:scale-95 disabled:bg-sage-soft disabled:text-sage-deep/50"
+                >
+                  {t('capture_next_save')}
+                </button>
+                <button
+                  onClick={() => {
+                    setCapturing(false)
+                    setNextDraft('')
+                  }}
+                  className="text-sm text-muted transition hover:text-ink"
+                >
+                  {t('back')}
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="mb-8 max-w-sm text-xl font-medium leading-snug text-ink">
+                {t('steps_done_q')}
+              </p>
+              <div className="flex w-full max-w-xs flex-col gap-2.5">
+                <button
+                  onClick={onComplete}
+                  className="rounded-full bg-sage px-8 py-3.5 font-medium text-white shadow-md transition hover:bg-sage-deep active:scale-95"
+                >
+                  {t('finished')}
+                </button>
+                <button
+                  onClick={regenerate}
+                  className="rounded-[var(--radius-soft)] border border-line bg-surface px-5 py-3.5 text-ink transition hover:border-sage hover:text-sage-deep"
+                >
+                  {t('keep_going')}
+                </button>
+              </div>
+              <button
+                onClick={() => setCapturing(true)}
+                className="mt-6 text-sm text-muted/80 transition hover:text-sage-deep"
+              >
+                {t('capture_next')}
+              </button>
+            </>
+          )}
         </>
       ) : showStep ? (
         /* Un sol pas a la vegada: el teu únic objectiu ara */
@@ -442,6 +511,15 @@ export function FocusMode({
       {cheer && (
         <div className="absolute inset-0 z-30 flex items-center justify-center bg-paper/80 backdrop-blur-sm animate-rise">
           <p className="text-2xl text-sage-deep">{t('cheer_started')}</p>
+        </div>
+      )}
+
+      {/* Confirmació breu en anotar la següent cosa: on la trobaràs */}
+      {captured && (
+        <div className="absolute inset-0 z-40 flex items-center justify-center bg-paper/90 px-6 text-center backdrop-blur-sm animate-rise">
+          <p className="max-w-sm text-xl font-medium leading-snug text-sage-deep">
+            {t('captured_msg', { bucket: t('bucket_next') })}
+          </p>
         </div>
       )}
 
