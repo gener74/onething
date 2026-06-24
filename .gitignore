@@ -27,3 +27,6 @@ dist-ssr
 .claude/settings.local.json
 
 .vercel
+
+# Notes de màrqueting/llançament (privades, no al repo públic)
+docs/posts-llancament.md
