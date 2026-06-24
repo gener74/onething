@@ -110,6 +110,26 @@ export async function breakdownTask(
 }
 
 /**
+ * Mètrica mínima i ANÒNIMA (started-rate): avisa el servidor que s'ha mostrat un
+ * desglossament (`shown`) o que s'ha fet el primer pas d'una sessió (`started`).
+ * NO envia cap contingut ni cap identificador —només un "+1" global— i és
+ * best-effort: si falla o no hi ha endpoint (Vite sol), s'ignora en silenci.
+ * `keepalive` perquè el ping sobrevisqui encara que es tanqui la pantalla.
+ */
+export function pingEvent(name: 'shown' | 'started'): void {
+  try {
+    void fetch('/api/event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+      keepalive: true,
+    }).catch(() => {})
+  } catch {
+    // mai trenquem la UX per una mètrica
+  }
+}
+
+/**
  * Fallback local: no és intel·ligent, però dóna una empenta inicial coherent
  * mentre no tinguem la IA real connectada. En l'idioma de l'usuari i amb el temps triat.
  */

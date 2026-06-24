@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { Task } from '../db'
-import { breakdownTask, type Feeling } from '../ai'
+import { breakdownTask, pingEvent, type Feeling } from '../ai'
 import { useI18n } from '../i18n'
 import { Leaves } from './Leaves'
 
@@ -103,6 +103,8 @@ export function FocusMode({
       setCheer(true)
       setTimeout(() => setCheer(false), 1600)
     }
+    // Mètrica anònima: aquesta sessió ha ARRENCAT (primer pas fet). Sense contingut.
+    if (wasFirst) pingEvent('started')
   }
 
   // Respostes del check-in. "Encara hi soc" i "M'he distret" només reinicien el
@@ -189,6 +191,8 @@ export function FocusMode({
         lang,
       })
       onSteps(steps)
+      // Mètrica anònima: s'ha mostrat un desglossament (denominador del started-rate).
+      pingEvent('shown')
       setSimplerCount(0)
       setAiLimited(!!limited)
       setAiRemaining(
