@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Task } from '../db'
 import { breakdownTask, pingEvent, type Feeling } from '../ai'
 import { useI18n } from '../i18n'
@@ -61,6 +61,9 @@ export function FocusMode({
   const [capturing, setCapturing] = useState(false)
   const [nextDraft, setNextDraft] = useState('')
   const [captured, setCaptured] = useState(false)
+  // started-rate net: comptem "shown" UN COP per sessió de focus (aquest muntatge),
+  // no a cada desglossament. Regenerar no ha d'inflar el denominador.
+  const shownPinged = useRef(false)
 
   // El primer pas pendent és el nostre "únic objectiu ara". Mai ensenyem la
   // llista sencera: una sola cosa a la vegada (menys càrrega cognitiva).
@@ -79,20 +82,22 @@ export function FocusMode({
   // pressiona). En comptes d'això, un anell de progrés es buida suaument, i quan
   // s'esgota apareix sol el check-in.
   const total = (task.focusMinutes ?? 0) * 60
-  const timeUp = showStep && total > 0 && elapsed >= total
+  // !askTime: mentre encara tries el temps (Resume) el rellotge no compta, per
+  // no disparar el check-in per sobre del selector.
+  const timeUp = showStep && !askTime && total > 0 && elapsed >= total
   // Fracció del temps triat ja transcorregut (0→1) per pintar l'anell.
   const progress = total > 0 ? Math.min(elapsed / total, 1) : 0
   // L'anell només té sentit quan estàs en un pas amb temps: no mentre tries el
   // temps (Resume) ni mentre la IA pensa.
   const showRing = total > 0 && showStep && !askTime && !loading
 
-  // El compte enrere només corre quan hi ha un pas a la vista I la IA no està
-  // pensant: el temps d'espera (p. ex. en demanar "Massa gran") no et menja minuts.
+  // El temps només corre quan estàs de debò en un pas: no mentre la IA pensa
+  // (p. ex. "Massa gran" no et menja minuts) ni mentre tries el temps al Resume.
   useEffect(() => {
-    if (!showStep || loading) return
+    if (!showStep || loading || askTime) return
     const id = setInterval(() => setElapsed((e) => e + 1), 1000)
     return () => clearInterval(id)
-  }, [showStep, loading])
+  }, [showStep, loading, askTime])
 
   // Tecla Escape per sortir.
   useEffect(() => {
@@ -214,7 +219,11 @@ export function FocusMode({
       })
       onSteps(steps)
       // Mètrica anònima: s'ha mostrat un desglossament (denominador del started-rate).
-      pingEvent('shown')
+      // Només el primer d'aquesta sessió: regenerar no ha de comptar de nou.
+      if (!shownPinged.current) {
+        pingEvent('shown')
+        shownPinged.current = true
+      }
       setSimplerCount(0)
       setAiLimited(!!limited)
       setAiRemaining(
