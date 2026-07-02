@@ -74,7 +74,7 @@ body {
 @keyframes rise {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -82,8 +82,12 @@ body {
   }
 }
 
+/* `backwards` (i no `both`): manté l'estat inicial abans d'arrencar (entrada
+   suau, sense parpelleig) però NO reté el `transform` final. Amb `both`, el
+   `translateY(0)` residual creava un stacking context permanent a cada targeta
+   i atrapava el menú ⋯ darrere de la targeta següent. */
 .animate-rise {
-  animation: rise 0.35s ease both;
+  animation: rise 0.6s ease backwards;
 }
 
 @keyframes breathe {

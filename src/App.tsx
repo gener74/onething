@@ -238,9 +238,13 @@ export default function App() {
                 <p className="text-sm text-muted/60 italic">{t('nothing_here')}</p>
               ) : (
                 <ul className="space-y-2">
-                  {byBucket[key].map((task) => (
+                  {byBucket[key].map((task, i) => (
                     <li
                       key={task.id}
+                      /* Stagger suau: cada targeta entra amb un lleuger desfasament
+                         (no totes de cop). Topall a 6 perquè una llista llarga no
+                         trigui una eternitat a acabar d'aparèixer. */
+                      style={{ animationDelay: `${Math.min(i, 6) * 70}ms` }}
                       className="rounded-[var(--radius-soft)] border border-line bg-surface px-4 py-3 animate-rise"
                     >
                       {editingId === task.id ? (

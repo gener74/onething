@@ -15,14 +15,11 @@ interface Props {
   onCaptureNext: (title: string) => void
 }
 
-/** Format mm:ss */
-function fmt(s: number) {
-  const m = Math.floor(s / 60)
-  const r = s % 60
-  return `${m}:${r.toString().padStart(2, '0')}`
-}
-
 const FEELINGS: Feeling[] = ['clar', 'mandra', 'bloquejat', 'ansietat']
+
+// Geometria de l'anell de progrés del focus (radi i circumferència, en px).
+const RING_R = 60
+const RING_C = 2 * Math.PI * RING_R
 
 // 0 = sense límit (cap compte enrere ni check-in).
 const TIMES = [2, 5, 15, 30, 0]
@@ -78,11 +75,16 @@ export function FocusMode({
   // pas. Es decideix només al muntar: un cop tries el temps, deixem de preguntar.
   const [askTime, setAskTime] = useState(() => hasSteps && currentIndex !== -1)
 
-  // El cercle: compte enrere del temps que t'has donat (calma, no pressió).
+  // El temps que t'has donat NO es mostra amb xifres (un rellotge que baixa
+  // pressiona). En comptes d'això, un anell de progrés es buida suaument, i quan
+  // s'esgota apareix sol el check-in.
   const total = (task.focusMinutes ?? 0) * 60
-  const remaining = Math.max(total - elapsed, 0)
-  // Check-in derivat: quan s'esgota el temps triat, el panell apareix sol.
   const timeUp = showStep && total > 0 && elapsed >= total
+  // Fracció del temps triat ja transcorregut (0→1) per pintar l'anell.
+  const progress = total > 0 ? Math.min(elapsed / total, 1) : 0
+  // L'anell només té sentit quan estàs en un pas amb temps: no mentre tries el
+  // temps (Resume) ni mentre la IA pensa.
+  const showRing = total > 0 && showStep && !askTime && !loading
 
   // El compte enrere només corre quan hi ha un pas a la vista I la IA no està
   // pensant: el temps d'espera (p. ex. en demanar "Massa gran") no et menja minuts.
@@ -265,21 +267,59 @@ export function FocusMode({
 
       <div className="flex min-h-full flex-col items-center justify-center px-6 py-16 text-center animate-rise">
 
-      {/* Cercle que respira: compte enrere si n'hi ha; si no, tres punts que palpiten. */}
-      <div className="mb-8 flex h-28 w-28 items-center justify-center rounded-full bg-sage-soft animate-breathe">
-        {total > 0 ? (
-          <span className="font-mono text-lg text-sage-deep">{fmt(remaining)}</span>
-        ) : (
-          <span className="flex gap-1.5" aria-hidden>
-            {[0, 1, 2].map((i) => (
-              <span
-                key={i}
-                className="h-2 w-2 rounded-full bg-sage animate-pulse-soft"
-                style={{ animationDelay: `${i * 0.2}s` }}
-              />
-            ))}
-          </span>
+      {/* Cercle de focus: un anell de sàlvia mostra el temps que t'has donat (s'omple
+          suaument de buit a ple, sense xifres → calma, no pressió). Al centre, el
+          cercle que respira amb l'àncora; mentre la IA pensa, tres punts que palpiten. */}
+      <div className="relative mb-8 flex h-32 w-32 items-center justify-center">
+        {showRing && (
+          <svg
+            className="pointer-events-none absolute inset-0 -rotate-90"
+            viewBox="0 0 128 128"
+            aria-hidden
+          >
+            {/* Pista de fons: l'anell "sencer" */}
+            <circle
+              cx="64"
+              cy="64"
+              r={RING_R}
+              fill="none"
+              strokeWidth="3"
+              style={{ stroke: 'var(--color-sage-soft)' }}
+            />
+            {/* Progrés: s'OMPLE de buit a ple mentre passa el temps triat (metàfora
+                positiva —avances— en comptes de "se't gasta el temps"). */}
+            <circle
+              cx="64"
+              cy="64"
+              r={RING_R}
+              fill="none"
+              strokeWidth="3"
+              strokeLinecap="round"
+              style={{
+                stroke: 'var(--color-sage-deep)',
+                strokeDasharray: RING_C,
+                strokeDashoffset: RING_C * (1 - progress),
+                transition: 'stroke-dashoffset 1s linear',
+              }}
+            />
+          </svg>
         )}
+        <div className="flex h-28 w-28 items-center justify-center rounded-full bg-sage-soft animate-breathe">
+          {loading ? (
+            /* Només mentre la IA pensa: tres punts que palpiten (indicador de càrrega). */
+            <span className="flex gap-1.5" aria-hidden>
+              {[0, 1, 2].map((i) => (
+                <span
+                  key={i}
+                  className="h-2 w-2 rounded-full bg-sage animate-pulse-soft"
+                  style={{ animationDelay: `${i * 0.2}s` }}
+                />
+              ))}
+            </span>
+          ) : (
+            <span className="h-2.5 w-2.5 rounded-full bg-sage" aria-hidden />
+          )}
+        </div>
       </div>
 
       {loading ? (
