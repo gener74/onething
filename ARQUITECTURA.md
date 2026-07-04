@@ -152,7 +152,7 @@ Si falla (sense xarxa, endpoint no desplegat, error) → `heuristicBreakdown()` 
 
 **Protecció de l'endpoint** (dissuasius, no barreres dures):
 - `sameOrigin()` — bloqueja altres webs i `curl` sense capçalera `Origin`.
-- Rate limit compartit amb **Upstash Redis**: ració diària per dispositiu (25, el "pla
+- Rate limit compartit amb **Upstash Redis**: ració diària per dispositiu (8, el "pla
   gratuït"), sostre diari per IP (150) i ràfega per IP (20/min). Comptadors anònims, cap
   dada d'usuari; si no hi ha Upstash configurat (p. ex. en local) → fail-open. La barrera
   dura final és el límit de despesa d'Anthropic a la consola.
