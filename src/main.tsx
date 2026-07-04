@@ -1,5 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { Analytics } from '@vercel/analytics/react'
 import './index.css'
 import { Root } from './Root.tsx'
 import { I18nProvider } from './i18n.tsx'
@@ -22,6 +23,10 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <I18nProvider>
       <Root />
+      {/* Comptador de visites anònim i sense cookies (Vercel Web Analytics).
+          NO toca les dades de les tasques (viuen a IndexedDB): només compta
+          càrregues de pàgina. El local-first es manté intacte. */}
+      <Analytics />
     </I18nProvider>
   </StrictMode>,
 )
