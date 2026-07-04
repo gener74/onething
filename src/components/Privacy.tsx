@@ -13,7 +13,7 @@ const CONTENT: Record<Lang, { title: string; body: string[] }> = {
     body: [
       'OneThing is local-first. Your tasks live only in this browser, on this device. There are no accounts, and no server keeps a copy of your data.',
       'The one exception: when you ask the AI to break a task down (“I don’t know where to start”), the task’s text — together with how you feel and how much time you have — is sent to Anthropic (the makers of Claude) to generate the steps. It’s used only to produce that answer; it isn’t stored by us.',
-      'No cookies, no advertising, no profiles, no accounts — nothing follows you around and nothing is tied to you.',
+      'No cookies, no advertising, no profiles, no accounts — nothing follows you around and nothing is tied to you. To know how many people arrive, Vercel counts anonymous page visits for us — without cookies, and never tied to who you are.',
       'The only thing we count is two anonymous totals: how many breakdowns are shown, and how many reach a first step. It tells us whether OneThing actually helps people get started. No content and no identifier ever leave with it — just a +1.',
       'Your data is yours. Use “Save a copy” to export it and “Recover” to bring it back — a plain file only you control.',
     ],
@@ -23,7 +23,7 @@ const CONTENT: Record<Lang, { title: string; body: string[] }> = {
     body: [
       'OneThing és local-first. Les teves tasques viuen només en aquest navegador, en aquest dispositiu. No hi ha comptes, i cap servidor en guarda una còpia.',
       'L’única excepció: quan demanes a la IA que parteixi una tasca (“No sé per on començar”), el text de la tasca —junt amb com et sents i quant temps tens— s’envia a Anthropic (els creadors de Claude) per generar els passos. Només s’utilitza per donar aquesta resposta; nosaltres no el desem.',
-      'Sense galetes, sense publicitat, sense perfils, sense comptes —res no et segueix i res no va lligat a tu.',
+      'Sense galetes, sense publicitat, sense perfils, sense comptes —res no et segueix i res no va lligat a tu. Per saber quanta gent arriba, Vercel compta les visites de pàgina de forma anònima —sense galetes, i mai lligades a qui ets.',
       'L’única cosa que comptem són dos totals anònims: quants desglossaments es mostren i quants arriben al primer pas. Ens diu si OneThing ajuda de debò a començar. Mai no hi viatja cap contingut ni cap identificador —només un +1.',
       'Les teves dades són teves. Fes servir “Desa una còpia” per exportar-les i “Recupera” per tornar-les —un fitxer senzill que controles només tu.',
     ],
@@ -33,7 +33,7 @@ const CONTENT: Record<Lang, { title: string; body: string[] }> = {
     body: [
       'OneThing es local-first. Tus tareas viven solo en este navegador, en este dispositivo. No hay cuentas, y ningún servidor guarda una copia de tus datos.',
       'La única excepción: cuando pides a la IA que desglose una tarea (“No sé por dónde empezar”), el texto de la tarea —junto con cómo te sientes y cuánto tiempo tienes— se envía a Anthropic (los creadores de Claude) para generar los pasos. Solo se usa para dar esa respuesta; nosotros no lo guardamos.',
-      'Sin cookies, sin publicidad, sin perfiles, sin cuentas —nada te sigue y nada va ligado a ti.',
+      'Sin cookies, sin publicidad, sin perfiles, sin cuentas —nada te sigue y nada va ligado a ti. Para saber cuánta gente llega, Vercel cuenta las visitas de página de forma anónima —sin cookies, y nunca ligadas a quién eres.',
       'Lo único que contamos son dos totales anónimos: cuántos desgloses se muestran y cuántos llegan al primer paso. Nos dice si OneThing ayuda de verdad a empezar. Nunca viaja ningún contenido ni identificador —solo un +1.',
       'Tus datos son tuyos. Usa “Guarda una copia” para exportarlos y “Recupera” para traerlos de vuelta —un archivo sencillo que controlas solo tú.',
     ],
