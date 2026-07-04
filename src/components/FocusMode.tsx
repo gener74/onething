@@ -73,10 +73,11 @@ export function FocusMode({
   // Tots els passos fets: no auto-completem; preguntem si la tasca ja està acabada.
   const allDone = hasSteps && currentIndex === -1
 
-  // En REPRENDRE una tasca que ja té passos pendents, tornem a preguntar quant
-  // de temps et dónes ara (cada sessió ho decideixes de nou) abans de mostrar el
-  // pas. Es decideix només al muntar: un cop tries el temps, deixem de preguntar.
-  const [askTime, setAskTime] = useState(() => hasSteps && currentIndex !== -1)
+  // En REPRENDRE una tasca que ja té passos, NO tornem a preguntar el temps:
+  // reutilitzem el que vas triar (desat a `focusMinutes`) i entrem directes al pas
+  // (fricció zero, sense canviar-te la feina sota els peus). Qui vulgui ajustar-lo
+  // té l'enllaç "canviar temps" al pas, que activa aquest selector sota demanda.
+  const [askTime, setAskTime] = useState(false)
 
   // El temps que t'has donat NO es mostra amb xifres (un rellotge que baixa
   // pressiona). En comptes d'això, un anell de progrés es buida suaument, i quan
@@ -152,8 +153,8 @@ export function FocusMode({
     setAskTime(false)
   }
 
-  // Reprendre: ja hi ha passos, només fixem el temps triat i mostrem el pas
-  // (sense tornar a cridar la IA).
+  // "Canviar temps": fixem el nou temps triat, reiniciem el rellotge d'aquesta
+  // sessió i tornem al pas (sense tornar a cridar la IA ni tocar els passos).
   function resumeWithTime(minutes: number) {
     onMinutes(minutes)
     setElapsed(0)
@@ -334,8 +335,8 @@ export function FocusMode({
       {loading ? (
         <p className="text-lg text-muted">{t('thinking')}</p>
       ) : askTime ? (
-        /* Reprenent una tasca: tornem a triar quant de temps ens donem ara */
-        timeScreen(resumeWithTime, onClose)
+        /* "Canviar temps" sota demanda: torna a triar minuts i torna al pas */
+        timeScreen(resumeWithTime, () => setAskTime(false))
       ) : allDone ? (
         /* Tots els passos fets: tu decideixes si la tasca està acabada, continues
            o anotes la següent cosa (útil quan era un projecte i el procés segueix) */
@@ -459,6 +460,13 @@ export function FocusMode({
               {t('too_big')}
             </button>
           )}
+
+          <button
+            onClick={() => setAskTime(true)}
+            className="mt-4 text-sm text-muted transition hover:text-ink"
+          >
+            {t('change_time')}
+          </button>
 
           <button
             onClick={regenerate}
