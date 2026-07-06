@@ -70,7 +70,7 @@ These are the bits I’d talk through in an interview:
 - **`done` is stored as `0 | 1`, not a boolean** — IndexedDB can’t index booleans, and the queries rely on `.where('done').equals(0|1)`.
 - **Buckets over dates** — a product decision encoded in the data model to avoid the anxiety of expiring deadlines.
 - **Accessibility & calm** — everything respects `prefers-reduced-motion` (the breathing circle and the falling-leaves empty state stop cleanly).
-- **Measuring success without betraying local-first.** The north-star is the **started-rate**: of all first steps shown, how many actually get done. It’s measured with two anonymous global counters in Upstash (`api/event.ts`) — **no content, no identifier, just a `+1`** — so the privacy promise holds.
+- **Measuring success without betraying local-first.** The north-star is the **started-rate**: of all first steps shown, how many actually get done. It’s measured with a few anonymous global counters in Upstash (`api/event.ts`) — **no content, no identifier, just a `+1`** — so the privacy promise holds. A `captured` counter also marks the funnel step _before_ the breakdown, so a drop-off shows up as landing-bounce vs. captured-but-never-focused.
 
 ## Measuring whether it works
 
@@ -78,6 +78,7 @@ These are the bits I’d talk through in an interview:
 
 Read it in the Upstash console → `onething-redis` → **Data Browser** → filter `m:*`:
 
+- `m:captured:total` — sessions where a first task was captured _(top-of-funnel)_
 - `m:shown:total` — first steps shown _(denominator)_
 - `m:started:total` — sessions where the first step was completed _(numerator)_
 
@@ -167,7 +168,7 @@ Persones amb **TDAH** · estudiants · professionals del coneixement · qualsevo
 - **`done` es desa com a `0 | 1`, no booleà** — IndexedDB no pot indexar booleans; les consultes fan `.where('done').equals(0|1)`.
 - **Calaixos en lloc de dates** — una decisió de producte codificada al model de dades per evitar l’angoixa dels terminis.
 - **Accessibilitat i calma** — tot respecta `prefers-reduced-motion`.
-- **Mesurar l’èxit sense trair el local-first.** La north-star és el **started-rate**: de tots els primers passos mostrats, quants es fan de debò. Es mesura amb dos comptadors globals i anònims a Upstash (`api/event.ts`) — **sense cap contingut, sense cap identificador, només un `+1`** — així la promesa de privacitat es manté.
+- **Mesurar l’èxit sense trair el local-first.** La north-star és el **started-rate**: de tots els primers passos mostrats, quants es fan de debò. Es mesura amb uns pocs comptadors globals i anònims a Upstash (`api/event.ts`) — **sense cap contingut, sense cap identificador, només un `+1`** — així la promesa de privacitat es manté. Un comptador `captured` marca també el pas de l’embut _abans_ del desglossament, així una fuga es veu com a rebot a la landing vs. capturat-però-mai-al-focus.
 
 ## Mesurar si funciona
 
@@ -175,6 +176,7 @@ Persones amb **TDAH** · estudiants · professionals del coneixement · qualsevo
 
 Llegeix-ho a la consola d’Upstash → `onething-redis` → **Data Browser** → filtre `m:*`:
 
+- `m:captured:total` — sessions on s’ha capturat una primera tasca _(part alta de l’embut)_
 - `m:shown:total` — primers passos mostrats _(denominador)_
 - `m:started:total` — sessions on s’ha completat el primer pas _(numerador)_
 

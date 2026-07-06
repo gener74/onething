@@ -19,6 +19,7 @@ import {
   type Bucket,
   type Task,
 } from './db'
+import { pingEvent } from './ai'
 import { FocusMode } from './components/FocusMode'
 import { DoneList } from './components/DoneList'
 import { Privacy } from './components/Privacy'
@@ -42,6 +43,10 @@ export default function App() {
   const [showPrivacy, setShowPrivacy] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  // Mètrica anònima d'embut: comptem "captured" UN COP per sessió (la primera
+  // tasca que s'escriu). Revela quanta gent enganxa prou per capturar abans
+  // d'arribar mai al desglossament (`shown`).
+  const capturedPinged = useRef(false)
 
   const tasks = useLiveQuery(() => db.tasks.where('done').equals(0).toArray(), [])
   const completedToday = useLiveQuery(
@@ -69,7 +74,12 @@ export default function App() {
 
   function handleAdd(e: React.FormEvent) {
     e.preventDefault()
+    if (!draft.trim()) return // res a capturar (addTask ja ho ignora, però evitem el ping)
     addTask(draft)
+    if (!capturedPinged.current) {
+      pingEvent('captured')
+      capturedPinged.current = true
+    }
     setDraft('')
   }
 
@@ -208,11 +218,15 @@ export default function App() {
           <Leaves />
           <div className="relative flex flex-col items-center gap-6 py-20 text-center animate-rise">
             <Mark className="h-20 w-20" breathe />
+            {/* Jerarquia invertida a propòsit: el nouvingut ve de la landing
+                esperant un coach, no una safata de tasques. Per això crida
+                l'ACCIÓ (què escriure i on ↑), la promesa la segueix, i el
+                mantra queda com a signatura discreta a baix. */}
             <div className="space-y-2">
-              <p className="text-xl text-ink">{t('empty_title')}</p>
+              <p className="text-xl text-ink">{t('empty_hint')}</p>
               <p className="mx-auto max-w-xs text-base text-sage-deep">{t('empty_motto')}</p>
               <p className="mx-auto max-w-xs text-sm leading-relaxed text-muted">
-                {t('empty_hint')}
+                {t('empty_title')}
               </p>
             </div>
           </div>

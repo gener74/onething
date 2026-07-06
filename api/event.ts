@@ -4,10 +4,13 @@
  * Mètrica mínima i ANÒNIMA per saber l'única cosa que de debò importa: de tots
  * els desglossaments que mostrem, quants porten la persona a fer el PRIMER pas
  * (el "started-rate", la north-star de l'app). No rep ni desa cap contingut ni
- * cap identificador: només incrementa un comptador global. Dos esdeveniments:
- *   - shown:   s'ha generat i mostrat un desglossament   → m:shown:total
- *   - started: s'ha completat el primer pas d'una sessió → m:started:total
- * started-rate = m:started:total / m:shown:total.
+ * cap identificador: només incrementa un comptador global. Tres esdeveniments
+ * marquen l'embut (cadascun UN COP per sessió):
+ *   - captured: s'ha capturat la primera tasca            → m:captured:total
+ *   - shown:    s'ha generat i mostrat un desglossament   → m:shown:total
+ *   - started:  s'ha completat el primer pas d'una sessió → m:started:total
+ * started-rate = m:started:total / m:shown:total; `captured` revela on es perd
+ * la gent ABANS d'arribar al desglossament (visita → captura → focus).
  *
  * Local-first intacte: res del que escrius surt d'aquí; només un "+1" sense
  * etiqueta. A diferència de la quota (`q:dev:*`, que caduca a ~25 h), aquests
@@ -19,6 +22,7 @@ import { Redis } from '@upstash/redis'
 
 // Esdeveniments acceptats → clau del comptador (llista blanca: res més s'admet).
 const COUNTERS: Record<string, string> = {
+  captured: 'm:captured:total',
   shown: 'm:shown:total',
   started: 'm:started:total',
 }
