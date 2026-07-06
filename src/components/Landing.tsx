@@ -13,7 +13,7 @@ const L: Record<
   { headline: string; slogan: string; pain: string; diff: string; cta: string; who: string }
 > = {
   en: {
-    headline: 'For when you get stuck before starting.',
+    headline: 'For when you struggle to start.',
     slogan: 'Not another to-do list — a coach that helps you begin.',
     pain: 'You know what you need to do. You’ve known it for days. You still haven’t started.',
     diff: 'ChatGPT gives you a plan. OneThing walks it with you, one step at a time.',
@@ -21,7 +21,7 @@ const L: Record<
     who: 'For ADHD brains · students · knowledge workers · anyone overwhelmed by a big task.',
   },
   ca: {
-    headline: "Per quan t'encalles abans de començar.",
+    headline: 'Per quan et costa començar.',
     slogan: 'No és una altra to-do list — un coach que t’ajuda a arrencar.',
     pain: 'Saps què has de fer. Fa dies que ho saps. Encara no has començat.',
     diff: 'ChatGPT et dóna un pla. OneThing el camina amb tu, pas a pas.',
@@ -29,7 +29,7 @@ const L: Record<
     who: 'Per a cervells amb TDAH · estudiants · professionals · qui se sent aclaparat per una tasca gran.',
   },
   es: {
-    headline: 'Para cuando te bloqueas antes de empezar.',
+    headline: 'Para cuando te cuesta empezar.',
     slogan: 'No es otra lista de tareas — un coach que te ayuda a arrancar.',
     pain: 'Sabes lo que tienes que hacer. Hace días que lo sabes. Todavía no has empezado.',
     diff: 'ChatGPT te da un plan. OneThing lo recorre contigo, paso a paso.',
