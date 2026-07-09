@@ -12,6 +12,10 @@ import { useI18n, LANGS, type Lang } from '../i18n'
  * no és una captura: pesa zero, es tradueix sola i no es pot quedar desfasada.
  * Ensenya la transformació (tasca gran → un primer pas ridículament petit)
  * perquè és la promesa sencera; dir-la no convenç, veure-la sí.
+ *
+ * L'exemple és el correu evitat a propòsit: el bloqueig no és de MIDA sinó de
+ * POR, i el pas prohibeix fer la tasca ("llegeix-lo, encara no responguis").
+ * És el que un desglossador genèric no dirà mai, i per tant el que ens separa.
  */
 
 type Copy = {
@@ -37,9 +41,9 @@ const L: Record<Lang, Copy> = {
     cta: 'Try it',
     who: 'For ADHD brains · students · knowledge workers · anyone overwhelmed by a big task.',
     trust: 'Free · No sign-up · Your tasks stay on your device',
-    mockTask: 'Sort out a year of paperwork',
+    mockTask: 'Reply to the email I’ve been avoiding for weeks',
     mockLabel: 'Your first step',
-    mockStep: 'Open the drawer and take out just the top folder.',
+    mockStep: 'Open it and read it. Don’t reply yet.',
     mockDone: 'Done',
   },
   ca: {
@@ -50,9 +54,9 @@ const L: Record<Lang, Copy> = {
     cta: 'Prova-ho',
     who: 'Per a cervells amb TDAH · estudiants · professionals · qui se sent aclaparat per una tasca gran.',
     trust: 'Gratis · Sense compte · Les teves tasques es queden al teu dispositiu',
-    mockTask: 'Endreçar tots els papers de l’any',
+    mockTask: 'Respondre el correu que fa setmanes que evito',
     mockLabel: 'El teu primer pas',
-    mockStep: 'Obre el calaix i treu només la carpeta de dalt.',
+    mockStep: 'Obre’l i llegeix-lo. Encara no responguis.',
     mockDone: 'Fet',
   },
   es: {
@@ -63,9 +67,9 @@ const L: Record<Lang, Copy> = {
     cta: 'Pruébalo',
     who: 'Para cerebros con TDAH · estudiantes · profesionales · quien se siente abrumado por una tarea grande.',
     trust: 'Gratis · Sin cuenta · Tus tareas se quedan en tu dispositivo',
-    mockTask: 'Ordenar todos los papeles del año',
+    mockTask: 'Responder el correo que llevo semanas evitando',
     mockLabel: 'Tu primer paso',
-    mockStep: 'Abre el cajón y saca solo la carpeta de arriba.',
+    mockStep: 'Ábrelo y léelo. No respondas todavía.',
     mockDone: 'Hecho',
   },
 }
@@ -74,7 +78,7 @@ const L: Record<Lang, Copy> = {
 function Preview({ c }: { c: Copy }) {
   return (
     <div className="mb-9 w-full max-w-sm rounded-[var(--radius-soft)] border border-line bg-surface px-6 py-7 shadow-sm">
-      <p className="truncate text-xs text-muted/70">{c.mockTask}</p>
+      <p className="text-xs leading-relaxed text-muted/70">{c.mockTask}</p>
       <p aria-hidden className="my-2 text-sm text-muted/40">
         ↓
       </p>
