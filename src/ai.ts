@@ -111,13 +111,14 @@ export async function breakdownTask(
 
 /**
  * Mètrica mínima i ANÒNIMA (embut): avisa el servidor d'una fita anònima de la
- * sessió —s'ha capturat la primera tasca (`captured`), s'ha mostrat un
- * desglossament (`shown`) o s'ha fet el primer pas (`started`).
+ * sessió —s'ha entrat des de la landing (`entered`), s'ha capturat la primera
+ * tasca (`captured`), s'ha mostrat un desglossament (`shown`) o s'ha fet el
+ * primer pas (`started`).
  * NO envia cap contingut ni cap identificador —només un "+1" global— i és
  * best-effort: si falla o no hi ha endpoint (Vite sol), s'ignora en silenci.
  * `keepalive` perquè el ping sobrevisqui encara que es tanqui la pantalla.
  */
-export function pingEvent(name: 'captured' | 'shown' | 'started'): void {
+export function pingEvent(name: 'entered' | 'captured' | 'shown' | 'started'): void {
   try {
     void fetch('/api/event', {
       method: 'POST',

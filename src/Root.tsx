@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import App from './App'
+import { pingEvent } from './ai'
 import { Gate } from './components/Gate'
 import { Landing } from './components/Landing'
 
@@ -21,6 +22,9 @@ export function Root() {
       <Landing
         onEnter={() => {
           localStorage.setItem('onething-entered', '1')
+          // Mètrica anònima: la landing ha convertit. Només aquí — qui ja hi ha
+          // entrat abans o ve de la PWA no passa per la landing i no compta.
+          pingEvent('entered')
           setEntered(true)
         }}
       />

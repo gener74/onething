@@ -4,13 +4,16 @@
  * Mètrica mínima i ANÒNIMA per saber l'única cosa que de debò importa: de tots
  * els desglossaments que mostrem, quants porten la persona a fer el PRIMER pas
  * (el "started-rate", la north-star de l'app). No rep ni desa cap contingut ni
- * cap identificador: només incrementa un comptador global. Tres esdeveniments
+ * cap identificador: només incrementa un comptador global. Quatre esdeveniments
  * marquen l'embut (cadascun UN COP per sessió):
+ *   - entered:  s'ha entrat a l'app des de la landing     → m:entered:total
  *   - captured: s'ha capturat la primera tasca            → m:captured:total
  *   - shown:    s'ha generat i mostrat un desglossament   → m:shown:total
  *   - started:  s'ha completat el primer pas d'una sessió → m:started:total
- * started-rate = m:started:total / m:shown:total; `captured` revela on es perd
- * la gent ABANS d'arribar al desglossament (visita → captura → focus).
+ * started-rate = m:started:total / m:shown:total. La resta situa ON es perd la
+ * gent abans d'arribar-hi: visites (Vercel) → entered → captured → shown. Sense
+ * `entered` no es pot distingir "se n'han anat de la landing" de "han entrat i
+ * no han escrit res" —dos problemes oposats amb solucions oposades.
  *
  * Local-first intacte: res del que escrius surt d'aquí; només un "+1" sense
  * etiqueta. A diferència de la quota (`q:dev:*`, que caduca a ~25 h), aquests
@@ -22,6 +25,7 @@ import { Redis } from '@upstash/redis'
 
 // Esdeveniments acceptats → clau del comptador (llista blanca: res més s'admet).
 const COUNTERS: Record<string, string> = {
+  entered: 'm:entered:total',
   captured: 'm:captured:total',
   shown: 'm:shown:total',
   started: 'm:started:total',
