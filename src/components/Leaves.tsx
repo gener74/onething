@@ -30,10 +30,10 @@ export function Leaves({ eager = false }: { eager?: boolean }) {
     <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden>
       {LEAVES.map((l, i) => {
         // Delay negatiu = l'animació arrenca "com si ja portés estona", amb la
-        // fulla ja dins la seva caiguda. Repartim el punt d'inici dins el TRAM
-        // OPAC del bucle (~20–75%, entre el fade-in i el fade-out) perquè totes
-        // surtin ja visibles, no a mig aparèixer.
-        const frac = 0.2 + (i / (LEAVES.length - 1)) * 0.55
+        // fulla ja dins la seva caiguda. Sembrem al terç SUPERIOR del bucle
+        // (~15–50%): ja passat el fade-in (visibles a l'instant) però amb gairebé
+        // tota la caiguda —lenta— per endavant, així cap fulla corre cap a terra.
+        const frac = 0.15 + (i / (LEAVES.length - 1)) * 0.35
         const delay = eager ? -frac * l.dur : l.delay
         return (
           <span
