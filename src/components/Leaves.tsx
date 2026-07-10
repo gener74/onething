@@ -18,27 +18,42 @@ const LEAVES = [
   { left: '28%', size: 20, delay: 12, dur: 15, drift: -22, char: '🍂' },
 ]
 
-export function Leaves() {
+/**
+ * `eager`: sembra les fulles ja a mig caure (delay negatiu, repartit) perquè la
+ * pluja hi sigui A L'INSTANT. Útil en pantalles transitòries —com la porta del
+ * primer contacte— que l'usuari travessa en pocs segons, abans que la seqüència
+ * lenta (delays de fins a 12s) arrenqui. A l'estat buit no cal: t'hi quedes i
+ * s'omple sola, i el ritme pausat és part de la calma.
+ */
+export function Leaves({ eager = false }: { eager?: boolean }) {
   return (
     <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden>
-      {LEAVES.map((l, i) => (
-        <span
-          key={i}
-          className="leaf"
-          style={
-            {
-              left: l.left,
-              fontSize: l.size,
-              lineHeight: 1,
-              '--drift': `${l.drift}px`,
-              animationDuration: `${l.dur}s`,
-              animationDelay: `${l.delay}s`,
-            } as CSSProperties
-          }
-        >
-          {l.char}
-        </span>
-      ))}
+      {LEAVES.map((l, i) => {
+        // Delay negatiu = l'animació arrenca "com si ja portés estona", amb la
+        // fulla ja dins la seva caiguda. Repartim el punt d'inici dins el TRAM
+        // OPAC del bucle (~20–75%, entre el fade-in i el fade-out) perquè totes
+        // surtin ja visibles, no a mig aparèixer.
+        const frac = 0.2 + (i / (LEAVES.length - 1)) * 0.55
+        const delay = eager ? -frac * l.dur : l.delay
+        return (
+          <span
+            key={i}
+            className="leaf"
+            style={
+              {
+                left: l.left,
+                fontSize: l.size,
+                lineHeight: 1,
+                '--drift': `${l.drift}px`,
+                animationDuration: `${l.dur}s`,
+                animationDelay: `${delay}s`,
+              } as CSSProperties
+            }
+          >
+            {l.char}
+          </span>
+        )
+      })}
     </div>
   )
 }

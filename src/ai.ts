@@ -112,13 +112,16 @@ export async function breakdownTask(
 /**
  * Mètrica mínima i ANÒNIMA (embut): avisa el servidor d'una fita anònima de la
  * sessió —s'ha entrat des de la landing (`entered`), s'ha capturat la primera
- * tasca (`captured`), s'ha mostrat un desglossament (`shown`) o s'ha fet el
- * primer pas (`started`).
+ * tasca (`captured`), s'ha mostrat un desglossament (`shown`), s'ha fet el
+ * primer pas (`started`) o un usuari que JA tenia tasques ha tornat en una
+ * sessió nova (`returned` → senyal de retenció, la pregunta que ens fèiem).
  * NO envia cap contingut ni cap identificador —només un "+1" global— i és
  * best-effort: si falla o no hi ha endpoint (Vite sol), s'ignora en silenci.
  * `keepalive` perquè el ping sobrevisqui encara que es tanqui la pantalla.
  */
-export function pingEvent(name: 'entered' | 'captured' | 'shown' | 'started'): void {
+export function pingEvent(
+  name: 'entered' | 'captured' | 'shown' | 'started' | 'returned',
+): void {
   try {
     void fetch('/api/event', {
       method: 'POST',

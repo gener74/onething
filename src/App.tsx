@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useRef, useState } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import {
   db,
@@ -47,6 +47,12 @@ export default function App() {
   // tasca que s'escriu). Revela quanta gent enganxa prou per capturar abans
   // d'arribar mai al desglossament (`shown`).
   const capturedPinged = useRef(false)
+  // Primer contacte: un nouvingut (mai ha creat res) no veu la llista ni els
+  // calaixos, sinó una sola porta que l'arrossega de dret al mode focus. Així
+  // viu el diferenciador —una cosa a la vegada— com a PRIMER acte, no com a
+  // funció amagada tres pantalles endins. El flag persisteix perquè no reaparegui.
+  const [seen, setSeen] = useState(() => localStorage.getItem('onething-seen') === '1')
+  const returnedPinged = useRef(false)
 
   const tasks = useLiveQuery(() => db.tasks.where('done').equals(0).toArray(), [])
   const completedToday = useLiveQuery(
@@ -71,6 +77,21 @@ export default function App() {
   const focusTask = (tasks ?? []).find((t) => t.id === focusId) ?? null
   const loaded = tasks !== undefined
   const isEmpty = loaded && (tasks?.length ?? 0) === 0
+  // First-run = mai ha creat cap tasca I encara no l'hem acompanyat. Qui esborra
+  // totes les tasques més tard NO és first-run → li deixem l'estat buit calmat.
+  const firstRun = isEmpty && !seen
+
+  // Mètrica de RETENCIÓ (la pregunta del feedback: "acabaria deixant-la"). Un
+  // "retorn" = ja hi havia tasques quan s'ha obert l'app en aquesta sessió. Es
+  // compta un cop per sessió (sessionStorage) i mai per a un nouvingut.
+  useEffect(() => {
+    if (!loaded || returnedPinged.current) return
+    returnedPinged.current = true
+    if (!isEmpty && !sessionStorage.getItem('onething-session')) {
+      sessionStorage.setItem('onething-session', '1')
+      pingEvent('returned')
+    }
+  }, [loaded, isEmpty])
 
   function handleAdd(e: React.FormEvent) {
     e.preventDefault()
@@ -81,6 +102,24 @@ export default function App() {
       capturedPinged.current = true
     }
     setDraft('')
+  }
+
+  // Porta del primer contacte: crea la tasca i ENTRA de dret al mode focus (no a
+  // la llista). `addTask` torna la id nova → l'obrim al focus a l'instant. A
+  // partir d'aquí ja no és nouvingut (flag `onething-seen`).
+  async function startFirst(e: React.FormEvent) {
+    e.preventDefault()
+    const title = draft.trim()
+    if (!title) return
+    localStorage.setItem('onething-seen', '1')
+    setSeen(true)
+    if (!capturedPinged.current) {
+      pingEvent('captured')
+      capturedPinged.current = true
+    }
+    const id = await addTask(title)
+    setDraft('')
+    if (typeof id === 'number') setFocusId(id)
   }
 
   function showReward(key: string) {
@@ -161,6 +200,52 @@ export default function App() {
 
   return (
     <div className="mx-auto flex min-h-full max-w-xl flex-col px-5 pb-24">
+      {!loaded ? (
+        /* Mentre Dexie llegeix (uns ms): un marc calmat, MAI la barra de captura.
+           Sense això, el nouvingut veuria un flaix de "gestor de tasques" abans
+           que la porta el substitueixi (firstRun encara és fals sense `loaded`). */
+        <div className="flex min-h-[80vh] items-center justify-center">
+          <Mark className="h-16 w-16" breathe />
+        </div>
+      ) : firstRun ? (
+        /* Primer contacte: cap llista, cap calaix. Una sola porta que et fa
+           viure la promesa —una cosa a la vegada— amb la primera frase que
+           escrius: en enviar-la, entres de dret al mode focus. */
+        <>
+          <Leaves eager />
+          <div className="relative flex min-h-[80vh] flex-col items-center justify-center gap-8 text-center animate-rise">
+            <Mark className="h-20 w-20" breathe />
+            <div className="space-y-3">
+              <h1 className="text-2xl font-medium leading-snug text-ink sm:text-3xl">
+                {t('first_q')}
+              </h1>
+              <p className="mx-auto max-w-sm text-base leading-relaxed text-muted">
+                {t('first_sub')}
+              </p>
+            </div>
+            <form onSubmit={startFirst} className="flex w-full max-w-sm flex-col gap-3">
+              <input
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                placeholder={t('first_ph')}
+                aria-label={t('first_q')}
+                autoFocus
+                className="w-full rounded-[var(--radius-soft)] border border-line bg-surface px-4 py-3.5 text-center text-ink placeholder:text-muted/70 focus:border-sage focus:outline-none"
+              />
+              <button
+                type="submit"
+                disabled={!draft.trim()}
+                className="rounded-full bg-sage px-8 py-3.5 font-medium text-white shadow-md transition hover:bg-sage-deep active:scale-95 disabled:bg-sage-soft disabled:text-sage-deep/50"
+              >
+                {t('first_cta')}
+              </button>
+            </form>
+            {/* Un visitant amb un altre idioma no ha de quedar atrapat a la porta */}
+            <LangSwitcher />
+          </div>
+        </>
+      ) : (
+      <>
       {/* Capçalera */}
       <header className="flex items-center justify-between pt-10 pb-6">
         <div className="flex items-center gap-2.5">
@@ -369,6 +454,8 @@ export default function App() {
         </div>
         <p className="text-[11px] text-muted/50">Ward Technologies Inc.</p>
       </footer>
+      </>
+      )}
 
       {/* Mode focus */}
       {focusTask && (

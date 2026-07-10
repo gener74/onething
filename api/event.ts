@@ -10,6 +10,7 @@
  *   - captured: s'ha capturat la primera tasca            → m:captured:total
  *   - shown:    s'ha generat i mostrat un desglossament   → m:shown:total
  *   - started:  s'ha completat el primer pas d'una sessió → m:started:total
+ *   - returned: un usuari que JA tenia tasques ha tornat  → m:returned:total
  * started-rate = m:started:total / m:shown:total. La resta situa ON es perd la
  * gent abans d'arribar-hi: visites (Vercel) → entered → captured → shown. Sense
  * `entered` no es pot distingir "se n'han anat de la landing" de "han entrat i
@@ -29,6 +30,7 @@ const COUNTERS: Record<string, string> = {
   captured: 'm:captured:total',
   shown: 'm:shown:total',
   started: 'm:started:total',
+  returned: 'm:returned:total',
 }
 
 const BURST_PER_IP = 60 // ~1/segon per IP: atura scripts que vulguin inflar la xifra

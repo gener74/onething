@@ -148,6 +148,13 @@ body {
   animation: leaf-fall linear infinite;
 }
 
+/* En mode fosc els emoji càlids (🍁🍂) destaquen massa sobre el paper fosc i
+   enlluernen. Els atenuem perquè segueixin caient però suaus, sense trencar la
+   calma nocturna. (Mantenim les fulles, no les substituïm: són la signatura.) */
+html.dark .leaf {
+  filter: brightness(0.7);
+}
+
 /* Calma i accessibilitat: cap fulla si l'usuari prefereix menys moviment. */
 @media (prefers-reduced-motion: reduce) {
   .leaf {
