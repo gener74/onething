@@ -6,6 +6,10 @@ import type { CSSProperties } from 'react'
  * Poques i lentes a propòsit (calma). Es desactiven soles amb `prefers-reduced-motion`.
  */
 
+// Factor global de velocitat de caiguda: >1 = més lentes (caiguda més calmada),
+// aplicat a totes les fulles i a tots els llocs on cauen. Un sol pom per afinar.
+const DUR_SCALE = 1.35
+
 // Paràmetres fixos (no aleatoris) perquè no "saltin" en cada render.
 const LEAVES = [
   { left: '6%', size: 26, delay: 0, dur: 16, drift: 32, char: '🍁' },
@@ -33,8 +37,9 @@ export function Leaves({ eager = false }: { eager?: boolean }) {
         // fulla ja dins la seva caiguda. Sembrem al terç SUPERIOR del bucle
         // (~15–50%): ja passat el fade-in (visibles a l'instant) però amb gairebé
         // tota la caiguda —lenta— per endavant, així cap fulla corre cap a terra.
+        const dur = l.dur * DUR_SCALE
         const frac = 0.15 + (i / (LEAVES.length - 1)) * 0.35
-        const delay = eager ? -frac * l.dur : l.delay
+        const delay = eager ? -frac * dur : l.delay
         return (
           <span
             key={i}
@@ -45,7 +50,7 @@ export function Leaves({ eager = false }: { eager?: boolean }) {
                 fontSize: l.size,
                 lineHeight: 1,
                 '--drift': `${l.drift}px`,
-                animationDuration: `${l.dur}s`,
+                animationDuration: `${dur}s`,
                 animationDelay: `${delay}s`,
               } as CSSProperties
             }
